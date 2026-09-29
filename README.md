@@ -1,115 +1,18 @@
 # Design Your Workspace
 
-A visual rental configurator. The 2D layered preview of the workspace fills the screen; the options live in a drawer (a bottom sheet on phones, a side panel on desktop). When the workspace is empty, a modal offers presets (Dual Monitor, Triple Monitor, Standing Desk, Gaming) and hides the drawer; the Presets button reopens it. Tabs switch between three scenes — Workspace (desk, chair, monitors, desk accessories), Lounge and Garage — and the drawer follows the active tab. Tap a + hotspot on the preview to swap or add products from that group (with the drawer open it scrolls to that section; otherwise a picker modal opens), or pick a desk, a chair, up to three monitors and any accessories, watch the preview update as you go, then finish at a checkout summary with weekly and rental totals.
+## Approach and notes
 
-Selecting a product (in the drawer or the picker modal) opens its details sheet: a gallery (the product image, an "In your space" view of its scene with your current selection, and any extra photos), the weekly price, a description and a specs list. Close it with Select, ×, Escape or a click outside; the selection is kept. Accessories and monitors can also be removed from the sheet. Tapping a selected accessory to remove it doesn't open the sheet.
+**Approach.** I built this with **Claude** (Claude Code) as a pair programmer, driven by the **BMad Method**: a short spec first (capabilities, constraints, non-goals), then for each feature a written plan with acceptance criteria and edge cases, an implementation, and an independent code review whose findings were verified and fixed before committing. The spec, plans, review logs and image prompts are in `_bmad-output/`. That loop took it from a working configurator with placeholder art, to the full-screen layout, zones and product details, to the visual polish. The realistic scene and product photos were generated with **Google Gemini** from prompts written to share one straight-on camera and lighting setup. The preview is a stack of 2D layers over a scene photo rather than 3D: every product is a transparent cut-out placed by a percentage box, so swapping an item is just swapping an image, and it stays fast on phones.
 
-- All prices are weekly rental prices in USD.
-- The selection is saved in the browser (`localStorage`) and survives reloads.
-- Checkout only validates and confirms on screen. No payment is taken and nothing is sent anywhere.
-- No backend: no API routes, database or auth. Every page is static, so it runs on Vercel's free (Hobby) tier.
+**Tech choices.** Next.js static pages on Vercel's free tier (no backend needed for a configurator), TypeScript, and a Tailwind v4 `@theme` as the single source of design tokens. GSAP handles only the choreography CSS can't (items settling into the scene, the preset stagger, the total counting up); everything else is Tailwind transitions, and all motion switches off under reduced motion. All the rules (one desk and chair, up to three monitors, the garage-space requirement, pricing, the monitor layout) are pure functions with unit tests, so the UI stays thin. The Gemini images are processed with a small script pipeline (`rembg` cut-outs, contact shadows from the alpha mask).
 
-Built with Next.js (App Router), TypeScript, Tailwind CSS and Vitest.
+**With more time I would:**
+- Add a 3D view with Three.js alongside the 2D preview, so renters can orbit around their setup and see it from any angle, using 3D models of the same products.
+- Replace the generated images with real product photography shot from one fixed camera, and add perspective-aware shadows and lighting so the layers blend in even better.
+- Add component and end-to-end tests (Playwright) for the drawer, modals and checkout, plus a real screen-reader pass; today the UI is covered by typed pure logic and manual checks.
+- Build the real rental flow: availability by date, IDR pricing, delivery to the villa, payment, and a shareable link for a saved setup.
+- Ship the deferred info button (view a product's details without selecting it), serve responsive image sizes for phones, and let the rental team edit the catalog without touching code.
 
-## Run locally
+## More
 
-Requires Node.js 22.12+ (developed on Node 24).
-
-```bash
-npm install
-npm run dev        # http://localhost:3000
-```
-
-Other scripts:
-
-```bash
-npm run build      # production build
-npm start          # serve the production build
-npm run lint       # ESLint
-npm test           # Vitest in watch mode (use `npx vitest run` for a single run)
-```
-
-## Tests
-
-Selection and pricing rules are pure functions with unit tests:
-
-- `src/lib/configurator.test.ts`: one desk and one chair (swaps replace), 0–3 monitors (repeatable, removal keeps order), accessory toggles, weekly and rental totals, and recovery from corrupt saved data.
-- `src/lib/presets.test.ts`: presets only reference catalog items and replace the selection.
-- `src/lib/productDetails.test.ts`: every catalog item has a description and at least 3 specs, no details for unknown ids, and extra image paths start with `/`.
-- `src/lib/checkout.test.ts`: checkout validation (name, email, start date not in the past using the local date, whole number of weeks ≥ 1).
-
-## Deploy to Vercel
-
-1. Push this repository to GitHub, GitLab or Bitbucket.
-2. In Vercel, choose **Add New → Project** and import the repository.
-3. Keep the defaults (Framework preset: Next.js, build command `next build`) and click **Deploy**.
-
-You don't need any environment variables or paid add-ons. Images are served as plain `<img>` tags from `public/`, so Vercel image optimization (and its quota) isn't used.
-
-## Project layout
-
-```
-public/scene/*.webp          zone scenes: room (workspace), lounge, garage (photos, 1600×1200 WebP)
-public/items/*.webp          one image per catalog item (+ *-front.webp chair thumbnails)
-src/lib/catalog.ts           catalog: items, prices, images, preview layer boxes
-src/lib/configurator.ts      selection reducer, totals, storage parsing (pure)
-src/lib/presets.ts           ready-made setups offered when the workspace is empty
-src/lib/productDetails.ts    product descriptions, specs and extra gallery photos (sample content)
-src/lib/checkout.ts          checkout validation (pure)
-src/components/              provider (state + localStorage), full-screen configurator + drawer, preview, presets, picker, product details sheet, summary bar
-src/app/page.tsx             configurator page
-src/app/checkout/page.tsx    checkout page
-scripts/                     image pipeline: cutout.sh (background removal), add_shadow.py (contact shadows)
-```
-
-## Images: scenes and products
-
-All images are photos generated with Google Gemini. The prompts are in `_bmad-output/scene-image-prompts.md`; each asks for a straight-on, level camera (70 mm look) and soft daylight so products line up with their scene. Full-size originals are kept locally in `design/scene-originals/` and `design/item-originals/` (git-ignored); only compressed WebP files are served.
-
-**Scenes** (`public/scene/{room,lounge,garage}.webp`): 1600×1200 (4:3), empty except for fixed decor (the lounge's sofa and plant, the garage's door and shelf). Convert a new one with:
-
-```bash
-magick original.jpeg -resize 1600x1200^ -gravity center -extent 1600x1200 -strip -quality 80 public/scene/room.webp
-```
-
-**Products** (`public/items/*.webp`), cut out on a plain contrasting background:
-
-```bash
-scripts/cutout.sh design/item-originals/desk-oak-standing.jpeg /tmp/desk.png          # remove background, crop tight, clean edges
-python3 scripts/add_shadow.py /tmp/desk.png public/items/desk-oak-standing.webp 1300x 0.012   # floor items: resize + contact shadows
-magick /tmp/monitor.png -resize 700x -quality 85 -define webp:alpha-quality=100 public/items/monitor-24-fhd.webp  # items on the desk: resize only
-```
-
-`cutout.sh` uses [rembg](https://github.com/danielgatis/rembg) through `uv` (the model downloads on first run) and ImageMagick. It works best when the product contrasts with its background; for black-on-black edges (a lamp base on a dark ledge) patch the mask by hand. `add_shadow.py` finds the feet, castors or tyres from the transparency mask and bakes a soft shadow under each; use a tolerance of about `0.012` for desks and `0.06` for chairs.
-
-**Placing a product** is its `layer` box in `src/lib/catalog.ts`, in percent of the scene: `left`, `width`, and either `top` (desks, chairs) or `bottom` (things that stand on a surface: monitors, desk plant and lamp on the desk top at `MONITOR_BASE`, lounge and garage items on the floor). The height follows from the image's proportions, so a new image can keep its box as long as it has a similar shape. `z` sets the stacking order (higher draws in front; the desk lamp sits behind the monitors). Size products from something of known size in the scene (a desk, the sofa, a door) and check with a composite before wiring them in:
-
-```bash
-magick public/scene/garage.webp \( public/items/motorbike.webp -resize 832x \) -geometry +400+580 -composite /tmp/check.png
-```
-
-Monitors only use their `width`: `monitorBoxes()` in `src/lib/scene.ts` stands them on the desk by count (one centered, two side by side, three as a bank that stays on the desk). Chairs show their back in the scene and use `thumbnail` for a front view on cards and in the details gallery.
-
-## Product details, specs and photos
-
-Descriptions and specs live in `src/lib/productDetails.ts`, keyed by catalog `id`. **They are sample values** — replace them with your real product data. Each entry has:
-
-- `description`: one or two sentences.
-- `specs`: a list of `{ label, value }` rows (for example Dimensions, Material, Colour, key features).
-- `images`: extra gallery photos, empty for now. To add photos, put the files under `public/` (for example `public/photos/desk-oak-standing-1.jpg`) and list their paths, starting with `/`: `images: ["/photos/desk-oak-standing-1.jpg"]`. They appear in the gallery after the main image and the "In your space" view. Any aspect ratio works; photos are fitted inside the frame.
-
-When you add a catalog item, add its details too: the unit test fails for any item without a description and at least 3 specs.
-
-## Editing the catalog and prices
-
-Everything lives in `src/lib/catalog.ts`:
-
-- Change `name` or `weeklyPrice` (USD per week) on any item.
-- To add an item, add an entry with a unique `id`, a `category` (`desk`, `chair`, `monitor` or `accessory`), an `image` and a `layer` box. Every item needs its own image.
-- Presets live in `src/lib/presets.ts`; each is a full selection (ids must exist in the catalog — a unit test checks this).
-- Selection rules are fixed by category: exactly one desk and one chair, 0–3 monitors (`MAX_MONITORS`), and each accessory at most once.
-- Accessories belong to a `group` (`desk-accessory`, `lounge`, `garage`); each group's `zone` decides which scene it appears in. Garage gear requires the Garage Space: adding gear adds it, removing it removes the gear.
-
-The unit test `catalog › matches catalog.md items and prices` pins the seed catalog. Update it when you change items or prices on purpose.
-
-Saved selections that refer to removed items are cleaned up automatically on load.
+See **[GUIDE.md](GUIDE.md)** for what the app does, how to run, test and deploy it, the project layout, and how the scene and product images are made and placed.
