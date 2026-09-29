@@ -24,7 +24,7 @@ export function PresetModal({ onPicked, onScratch }: { onPicked: () => void; onS
     >
       <div className="flex max-h-[calc(100dvh-2rem)] flex-col">
         <header className="shrink-0 px-5 pb-3 pt-5">
-          <h2 id="presets-title" className="font-display text-2xl font-bold tracking-tight">
+          <h2 id="presets-title" className="font-display text-headline">
             Start from a preset
           </h2>
           <p className="mt-1 text-sm text-muted">Pick a ready-made setup and tweak it, or build your own from scratch.</p>
@@ -51,9 +51,9 @@ export function PresetModal({ onPicked, onScratch }: { onPicked: () => void; onS
                 >
                   <SceneLayers selection={preset.selection} />
                 </span>
-                <span className="mt-2 block text-sm font-semibold">{preset.name}</span>
+                <span className="mt-2 block text-sm font-medium">{preset.name}</span>
                 <span className="block text-xs leading-snug text-muted">{preset.description}</span>
-                <span className="mt-auto block pt-1 text-sm font-semibold tabular-nums text-accent">
+                <span className="mt-auto block pt-1 text-sm font-medium tabular-nums text-accent">
                   {formatPrice(weeklyTotal(preset.selection))}/week
                 </span>
               </button>
@@ -68,7 +68,7 @@ export function PresetModal({ onPicked, onScratch }: { onPicked: () => void; onS
           <button
             type="button"
             onClick={() => requestClose()}
-            className="rounded-control border border-line bg-raised px-4 py-2 text-sm font-semibold text-ink transition hover:border-ink/40 hover:bg-surface focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent motion-reduce:transition-none"
+            className="rounded-control border border-line bg-raised px-4 py-2 text-sm font-medium text-ink transition hover:border-ink/40 hover:bg-surface focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent motion-reduce:transition-none"
           >
             Build from scratch
           </button>

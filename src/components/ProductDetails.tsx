@@ -185,11 +185,11 @@ function ProductDetailsSheet({ item, onClose }: { item: CatalogItem; onClose: ()
       <div className="flex max-h-[calc(100dvh-2rem)] flex-col">
         <header className="flex shrink-0 items-start justify-between gap-2 px-5 pb-2 pt-4">
           <div className="min-w-0">
-            <h2 id="product-details-title" className="font-display text-xl font-semibold leading-snug tracking-tight">
+            <h2 id="product-details-title" className="font-display text-title">
               {item.name}
             </h2>
             <p className="text-sm tabular-nums text-muted">
-              <span className="font-semibold text-ink">{formatPrice(item.weeklyPrice)}</span>/week
+              <span className="font-medium text-ink">{formatPrice(item.weeklyPrice)}</span>/week
               {monitorCount > 1 && <span> · {monitorCount} added</span>}
             </p>
           </div>
@@ -209,7 +209,7 @@ function ProductDetailsSheet({ item, onClose }: { item: CatalogItem; onClose: ()
             <div className="space-y-4">
               <p className="text-sm leading-relaxed text-ink/80">{details.description}</p>
               <section aria-labelledby="product-specs-title">
-                <h3 id="product-specs-title" className="text-sm font-semibold">
+                <h3 id="product-specs-title" className="text-sm font-medium">
                   Specifications
                 </h3>
                 <dl className="mt-2 divide-y divide-line rounded-card border border-line text-sm">
@@ -239,7 +239,7 @@ function ProductDetailsSheet({ item, onClose }: { item: CatalogItem; onClose: ()
                   onClose();
                 });
               }}
-              className="rounded-control px-4 py-2 text-sm font-semibold text-danger transition hover:bg-danger/10 focus-visible:outline-2 focus-visible:outline-danger motion-reduce:transition-none"
+              className="rounded-control px-4 py-2 text-sm font-medium text-danger transition hover:bg-danger/10 focus-visible:outline-2 focus-visible:outline-danger motion-reduce:transition-none"
             >
               {item.category === "monitor" && monitorCount > 1 ? "Remove one" : "Remove"}
             </button>
@@ -247,7 +247,7 @@ function ProductDetailsSheet({ item, onClose }: { item: CatalogItem; onClose: ()
           <button
             type="button"
             onClick={() => requestClose()}
-            className="rounded-control bg-accent px-5 py-2 text-sm font-semibold text-accent-contrast shadow-card transition hover:bg-accent/90 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent motion-reduce:transition-none"
+            className="rounded-full bg-accent px-5 py-2 text-sm font-medium text-accent-contrast shadow-card transition hover:bg-accent/90 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent motion-reduce:transition-none"
           >
             Select
           </button>

@@ -1,12 +1,11 @@
 import type { Metadata, Viewport } from "next";
 import type { ReactNode } from "react";
-import { Bricolage_Grotesque, Inter } from "next/font/google";
+import { Inter } from "next/font/google";
 import { ConfiguratorProvider } from "@/components/ConfiguratorProvider";
 import "./globals.css";
 
 // Exposed as CSS variables; globals.css maps them to the --font-sans / --font-display tokens.
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter", display: "swap" });
-const bricolage = Bricolage_Grotesque({ subsets: ["latin"], variable: "--font-bricolage", display: "swap" });
 
 export const metadata: Metadata = {
   title: "Design Your Workspace",
@@ -21,7 +20,7 @@ export const viewport: Viewport = {
 
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
-    <html lang="en" className={`${inter.variable} ${bricolage.variable} h-full antialiased`}>
+    <html lang="en" className={`${inter.variable} h-full antialiased`}>
       <body className="min-h-full flex flex-col">
         <ConfiguratorProvider>{children}</ConfiguratorProvider>
       </body>

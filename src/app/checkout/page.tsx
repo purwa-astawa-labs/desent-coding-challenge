@@ -19,9 +19,9 @@ import { type LineItem, hasDeskAndChair, lineItems, rentalTotal, weeklyTotal } f
 /** Shared card and button styles for the checkout page. */
 const card = "rounded-sheet border border-line bg-raised p-5 shadow-card";
 const primaryButton =
-  "rounded-control bg-accent px-5 py-3 text-sm font-semibold text-accent-contrast shadow-card transition hover:bg-accent/90 hover:shadow-float focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent motion-reduce:transition-none";
+  "rounded-full bg-accent px-5 py-3 text-sm font-medium text-accent-contrast shadow-card transition hover:bg-accent/90 hover:shadow-float focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent motion-reduce:transition-none";
 const secondaryButton =
-  "rounded-control border border-line bg-raised px-5 py-3 text-sm font-semibold text-ink transition hover:border-ink/30 hover:bg-surface focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent motion-reduce:transition-none";
+  "rounded-control border border-line bg-raised px-5 py-3 text-sm font-medium text-ink transition hover:border-ink/30 hover:bg-surface focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent motion-reduce:transition-none";
 
 /** Brand header linking back to the configurator. */
 function CheckoutHeader() {
@@ -119,7 +119,7 @@ export default function CheckoutPage() {
       <CheckoutHeader />
       <main className="mx-auto w-full max-w-3xl px-4 py-6">
         <div className="rounded-sheet border border-accent/30 bg-accent/10 p-5" role="status">
-          <h1 className="font-display text-2xl font-bold tracking-tight text-accent">Rental confirmed</h1>
+          <h1 className="font-display text-headline text-ink">Rental confirmed</h1>
           <p className="mt-1 text-ink [overflow-wrap:anywhere]">
             Thanks, {confirmation.details.name.trim()}. Your rental starting {confirmation.details.startDate} is confirmed
             for {confirmation.details.email.trim()}.
@@ -127,18 +127,18 @@ export default function CheckoutPage() {
           <p className="mt-1 text-sm text-ink/80">No payment was taken and nothing was sent — this on-screen confirmation is all there is.</p>
         </div>
         <section className={`mt-6 ${card}`}>
-          <h2 className="font-display text-lg font-semibold tracking-tight">Your workspace</h2>
+          <h2 className="font-display text-title">Your workspace</h2>
           <ItemList items={confirmation.items} />
           <dl className="mt-3 space-y-1 border-t border-line pt-3 text-sm">
             <div className="flex justify-between">
               <dt>Weekly total</dt>
-              <dd className="font-semibold tabular-nums">{formatPrice(confirmation.weekly)}/week</dd>
+              <dd className="font-medium tabular-nums">{formatPrice(confirmation.weekly)}/week</dd>
             </div>
             <div className="flex justify-between">
               <dt>
                 Rental total ({confirmation.weeks} week{confirmation.weeks === 1 ? "" : "s"})
               </dt>
-              <dd className="font-semibold tabular-nums">{formatPrice(confirmation.total)}</dd>
+              <dd className="font-medium tabular-nums">{formatPrice(confirmation.total)}</dd>
             </div>
           </dl>
         </section>
@@ -197,11 +197,11 @@ export default function CheckoutPage() {
       >
         ← Back to edit
       </Link>
-      <h1 className="mt-2 font-display text-3xl font-bold tracking-tight text-ink">Checkout</h1>
+      <h1 className="mt-2 font-display text-headline text-ink">Checkout</h1>
 
       <div className="mt-6 grid grid-cols-1 gap-6 md:grid-cols-2">
         <section className={`min-w-0 space-y-4 ${card}`}>
-          <h2 className="font-display text-lg font-semibold tracking-tight">Your workspace</h2>
+          <h2 className="font-display text-title">Your workspace</h2>
           <SelectionPreviews />
           {items.length ? (
             <ItemList items={items} />
@@ -210,12 +210,12 @@ export default function CheckoutPage() {
           )}
           <div className="flex justify-between border-t border-line pt-3 text-sm">
             <span>Weekly total</span>
-            <span className="font-semibold tabular-nums">{formatPrice(weekly)}/week</span>
+            <span className="font-medium tabular-nums">{formatPrice(weekly)}/week</span>
           </div>
         </section>
 
         <form noValidate onSubmit={onSubmit} className={`min-w-0 space-y-4 ${card}`}>
-          <h2 className="font-display text-lg font-semibold tracking-tight">Rental details</h2>
+          <h2 className="font-display text-title">Rental details</h2>
           <Field id="name" label="Name" error={errors.name}>
             <input type="text" autoComplete="name" {...inputProps("name")} />
           </Field>
@@ -235,8 +235,8 @@ export default function CheckoutPage() {
               <dd className="tabular-nums">{formatPrice(weekly)}/week</dd>
             </div>
             <div className="flex justify-between text-base">
-              <dt className="font-semibold">Rental total{weeksValid ? ` (${weeks} week${weeks === 1 ? "" : "s"})` : ""}</dt>
-              <dd className="font-semibold tabular-nums text-accent">{weeksValid ? formatPrice(rentalTotal(selection, weeks)) : "—"}</dd>
+              <dt className="font-medium">Rental total{weeksValid ? ` (${weeks} week${weeks === 1 ? "" : "s"})` : ""}</dt>
+              <dd className="font-medium tabular-nums text-accent">{weeksValid ? formatPrice(rentalTotal(selection, weeks)) : "—"}</dd>
             </div>
           </dl>
 

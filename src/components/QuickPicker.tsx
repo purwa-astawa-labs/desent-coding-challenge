@@ -42,7 +42,7 @@ export function QuickPicker({ group, onClose }: { group: Group; onClose: () => v
     >
       <div className="flex max-h-[calc(100dvh-2rem)] flex-col">
         <header className="flex shrink-0 items-center justify-between gap-2 px-5 pb-3 pt-4">
-          <h2 id="quick-pick-title" className="font-display text-xl font-semibold tracking-tight">
+          <h2 id="quick-pick-title" className="font-display text-title">
             {meta.title} <span className="font-sans text-sm font-normal text-muted">· {meta.rule}</span>
             {group === "monitor" && (
               <span className="font-sans text-sm font-normal text-muted">

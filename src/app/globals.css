@@ -2,27 +2,43 @@
 
 /* Design tokens. Each one becomes a utility: bg-surface, text-ink, rounded-card, shadow-float, font-display… */
 @theme {
-  /* Warm neutrals + one accent. Text colors meet WCAG AA on raised and surface. */
-  --color-surface: #f5f2ec;
+  /* Clean monochrome (reference: monis.rent): white cards on light grey, black ink, grey hairlines, dark slate primary. Text meets WCAG AA. */
+  --color-surface: #f5f5f5;
   --color-raised: #ffffff;
-  --color-ink: #1d1a16;
-  --color-muted: #6b6258;
-  --color-line: #e3ddd3;
-  --color-accent: #0e6b63;
+  --color-ink: #000000;
+  --color-muted: #525252;
+  --color-line: #e5e7eb;
+  --color-accent: #15252e;
   --color-accent-contrast: #ffffff;
-  --color-danger: #b42318;
+  --color-danger: #dc2626;
 
-  --radius-control: 0.625rem;
-  --radius-card: 1rem;
-  --radius-sheet: 1.5rem;
+  /* 8px cards and controls; buttons, chips and tabs are rounded-full pills. */
+  --radius-control: 0.5rem;
+  --radius-card: 0.5rem;
+  --radius-sheet: 1rem;
 
-  --shadow-card: 0 1px 2px rgb(29 26 22 / 0.06), 0 1px 3px rgb(29 26 22 / 0.08);
-  --shadow-float: 0 10px 28px -8px rgb(29 26 22 / 0.22), 0 2px 6px rgb(29 26 22 / 0.06);
-  --shadow-sheet: 0 -12px 40px -10px rgb(29 26 22 / 0.22), 0 24px 64px -16px rgb(29 26 22 / 0.35);
+  --shadow-card: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+  --shadow-float: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+  --shadow-sheet: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
 
-  /* next/font variables are set on <html> in layout.tsx; the system stack is the fallback. */
+  /* Inter everywhere; display type is Inter bold. */
   --font-sans: var(--font-inter), ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-  --font-display: var(--font-bricolage), var(--font-inter), ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --font-display: var(--font-inter), ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+
+  /* Type scale: text-eyebrow (12px bold uppercase labels), text-title (section/dialog), text-headline (page), text-price. */
+  --text-eyebrow: 0.75rem;
+  --text-eyebrow--line-height: 1rem;
+  --text-eyebrow--letter-spacing: 0.1em;
+  --text-eyebrow--font-weight: 700;
+  --text-title: 1.125rem;
+  --text-title--line-height: 1.75rem;
+  --text-title--font-weight: 700;
+  --text-headline: 1.875rem;
+  --text-headline--line-height: 2.25rem;
+  --text-headline--font-weight: 700;
+  --text-price: 1.25rem;
+  --text-price--line-height: 1.75rem;
+  --text-price--font-weight: 700;
 }
 
 body {

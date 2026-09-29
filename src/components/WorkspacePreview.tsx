@@ -82,7 +82,7 @@ function Hotspots({
               <span
                 aria-hidden="true"
                 className={[
-                  "relative flex h-6 w-6 items-center justify-center rounded-full text-sm font-bold shadow-float ring-2 transition duration-200 ease-out motion-reduce:transition-none",
+                  "relative flex h-6 w-6 items-center justify-center rounded-full text-sm font-medium shadow-float ring-2 transition duration-200 ease-out motion-reduce:transition-none",
                   isActive
                     ? "bg-accent text-accent-contrast ring-raised"
                     : "bg-raised text-ink ring-ink/70 group-hover:scale-110 motion-reduce:group-hover:scale-100",
@@ -110,13 +110,13 @@ function GarageLocked({ interactive }: { interactive: boolean }) {
   return (
     <div className="absolute inset-0 z-[70] flex items-center justify-center bg-ink/45 p-4">
       <div className="max-w-xs rounded-card bg-raised p-4 text-center shadow-float">
-        <p className="font-display font-semibold text-ink">Garage space not rented</p>
+        <p className="font-display text-title text-ink">Garage space not rented</p>
         <p className="mt-1 text-sm text-muted">Rent it to store a motorbike, surfboard or sport gear.</p>
         {interactive && (
           <button
             type="button"
             onClick={() => dispatch({ type: "toggleAccessory", id: GARAGE_SPACE_ID })}
-            className="mt-3 w-full rounded-control bg-accent px-4 py-2 text-sm font-semibold text-accent-contrast transition hover:bg-accent/90 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent motion-reduce:transition-none"
+            className="mt-3 w-full rounded-full bg-accent px-4 py-2 text-sm font-medium text-accent-contrast transition hover:bg-accent/90 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent motion-reduce:transition-none"
           >
             Rent garage space · {formatPrice(price)}/week
           </button>

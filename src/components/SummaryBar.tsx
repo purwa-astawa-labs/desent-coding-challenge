@@ -17,7 +17,7 @@ export function SummaryBar() {
     <div className="flex items-center justify-between gap-3">
       <div className="min-w-0" aria-live="polite">
         <p className="text-xs text-muted">{hydrated ? `${count} item${count === 1 ? "" : "s"}` : " "}</p>
-        <p className="font-display text-xl font-semibold tabular-nums text-ink">
+        <p className="font-display text-price tabular-nums text-ink">
           {hydrated ? (
             <>
               <span aria-hidden="true">
@@ -33,7 +33,7 @@ export function SummaryBar() {
       </div>
       <Link
         href="/checkout"
-        className="shrink-0 rounded-control bg-accent px-5 py-3 text-sm font-semibold text-accent-contrast shadow-card transition hover:bg-accent/90 hover:shadow-float focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent motion-reduce:transition-none"
+        className="shrink-0 rounded-full bg-accent px-5 py-3 text-sm font-medium text-accent-contrast shadow-card transition hover:bg-accent/90 hover:shadow-float focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent motion-reduce:transition-none"
       >
         Checkout
       </Link>
