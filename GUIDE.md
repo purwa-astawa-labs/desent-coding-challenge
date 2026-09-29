@@ -44,6 +44,8 @@ Selection and pricing rules are pure functions with unit tests:
 
 ## Deploy to Vercel
 
+Live: https://desent-coding-challenge-one.vercel.app (project `desent-coding-challenge` on Vercel, linked to this GitHub repo; every push to `main` redeploys).
+
 1. Push this repository to GitHub, GitLab or Bitbucket.
 2. In Vercel, choose **Add New → Project** and import the repository.
 3. Keep the defaults (Framework preset: Next.js, build command `next build`) and click **Deploy**.

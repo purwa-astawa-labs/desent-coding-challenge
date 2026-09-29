@@ -1,5 +1,7 @@
 # Design Your Workspace
 
+**Live demo:** https://desent-coding-challenge-one.vercel.app
+
 ## Approach and notes
 
 **Approach.** I built this with **Claude** (Claude Code) as a pair programmer, driven by the **BMad Method**: a short spec first (capabilities, constraints, non-goals), then for each feature a written plan with acceptance criteria and edge cases, an implementation, and an independent code review whose findings were verified and fixed before committing. The spec, plans, review logs and image prompts are in `_bmad-output/`. That loop took it from a working configurator with placeholder art, to the full-screen layout, zones and product details, to the visual polish. The realistic scene and product photos were generated with **Google Gemini** from prompts written to share one straight-on camera and lighting setup. The preview is a stack of 2D layers over a scene photo rather than 3D: every product is a transparent cut-out placed by a percentage box, so swapping an item is just swapping an image, and it stays fast on phones.
