@@ -1,0 +1,190 @@
+import { describe, expect, it } from "vitest";
+import { catalog, getItem, itemsInCategory } from "./catalog";
+import {
+  type Selection,
+  emptySelection,
+  hasDeskAndChair,
+  lineItems,
+  parseStoredSelection,
+  rentalTotal,
+  selectionReducer as reduce,
+  weeklyTotal,
+} from "./configurator";
+
+const withMonitors = (...ids: string[]): Selection => ({ ...emptySelection, monitorIds: ids });
+
+describe("catalog", () => {
+  it("matches catalog.md items and prices", () => {
+    const prices = Object.fromEntries(catalog.map((i) => [i.name, i.weeklyPrice]));
+    expect(prices).toEqual({
+      "Minimal White Desk": 30,
+      "Oak Standing Desk": 45,
+      "Walnut Executive Desk": 55,
+      "Lounge Task Chair": 20,
+      "Ergo Mesh Chair": 25,
+      "Executive Leather Chair": 35,
+      '24" Full HD Monitor': 12,
+      '27" 4K Monitor': 20,
+      Plants: 5,
+      "Coffee Station": 15,
+      "Sport Gear": 10,
+      Surfboard: 12,
+      Motorbike: 60,
+      "Garage Space": 40,
+    });
+    expect(itemsInCategory("desk")).toHaveLength(3);
+    expect(itemsInCategory("chair")).toHaveLength(3);
+    expect(itemsInCategory("monitor")).toHaveLength(2);
+    expect(itemsInCategory("accessory")).toHaveLength(6);
+  });
+
+  it("gives every item its own image", () => {
+    const images = catalog.map((i) => i.image);
+    expect(new Set(images).size).toBe(catalog.length);
+    images.forEach((src) => expect(src).toMatch(/^\/items\/.+\.svg$/));
+  });
+});
+
+describe("desk and chair", () => {
+  it("swaps desk: Walnut replaces Oak", () => {
+    const s = reduce(reduce(emptySelection, { type: "selectDesk", id: "desk-oak-standing" }), {
+      type: "selectDesk",
+      id: "desk-walnut-executive",
+    });
+    expect(s.deskId).toBe("desk-walnut-executive");
+    expect(lineItems(s).map((l) => l.item.id)).toEqual(["desk-walnut-executive"]);
+    expect(weeklyTotal(s)).toBe(55);
+  });
+
+  it("swaps chair and never holds two", () => {
+    let s = reduce(emptySelection, { type: "selectChair", id: "chair-ergo-mesh" });
+    s = reduce(s, { type: "selectChair", id: "chair-executive-leather" });
+    expect(s.chairId).toBe("chair-executive-leather");
+    expect(lineItems(s).filter((l) => l.item.category === "chair")).toHaveLength(1);
+  });
+
+  it("ignores ids from the wrong category", () => {
+    const s = reduce(emptySelection, { type: "selectDesk", id: "chair-ergo-mesh" });
+    expect(s).toBe(emptySelection);
+  });
+
+  it("requires desk and chair for checkout", () => {
+    expect(hasDeskAndChair(emptySelection)).toBe(false);
+    expect(hasDeskAndChair({ ...emptySelection, deskId: "desk-oak-standing" })).toBe(false);
+    expect(hasDeskAndChair({ ...emptySelection, deskId: "desk-oak-standing", chairId: "chair-ergo-mesh" })).toBe(true);
+  });
+});
+
+describe("monitors", () => {
+  it("adds a third monitor, then a fourth is a no-op", () => {
+    const two = withMonitors("monitor-24-fhd", "monitor-24-fhd");
+    const three = reduce(two, { type: "addMonitor", id: "monitor-27-4k" });
+    expect(three.monitorIds).toEqual(["monitor-24-fhd", "monitor-24-fhd", "monitor-27-4k"]);
+    const four = reduce(three, { type: "addMonitor", id: "monitor-24-fhd" });
+    expect(four).toBe(three);
+    expect(four.monitorIds).toHaveLength(3);
+  });
+
+  it("removes the middle monitor and keeps order", () => {
+    const s = reduce(withMonitors("monitor-24-fhd", "monitor-27-4k", "monitor-24-fhd"), {
+      type: "removeMonitor",
+      index: 1,
+    });
+    expect(s.monitorIds).toEqual(["monitor-24-fhd", "monitor-24-fhd"]);
+  });
+
+  it("ignores out-of-range removals", () => {
+    const s = withMonitors("monitor-24-fhd");
+    expect(reduce(s, { type: "removeMonitor", index: 5 })).toBe(s);
+    expect(reduce(s, { type: "removeMonitor", index: -1 })).toBe(s);
+  });
+});
+
+describe("accessories", () => {
+  it("toggles Plants off without affecting others", () => {
+    const s: Selection = { ...emptySelection, accessoryIds: ["plants", "surfboard"] };
+    const next = reduce(s, { type: "toggleAccessory", id: "plants" });
+    expect(next.accessoryIds).toEqual(["surfboard"]);
+    expect(reduce(next, { type: "toggleAccessory", id: "plants" }).accessoryIds).toEqual(["surfboard", "plants"]);
+  });
+});
+
+describe("pricing", () => {
+  const s: Selection = {
+    deskId: "desk-oak-standing",
+    chairId: "chair-ergo-mesh",
+    monitorIds: ["monitor-24-fhd", "monitor-24-fhd"],
+    accessoryIds: ["plants"],
+  };
+
+  it("weekly 99, 4-week rental 396", () => {
+    expect(weeklyTotal(s)).toBe(99);
+    expect(rentalTotal(s, 4)).toBe(396);
+  });
+
+  it("weekly total equals the sum of listed line items", () => {
+    const sum = lineItems(s).reduce((acc, l) => acc + l.item.weeklyPrice, 0);
+    expect(lineItems(s)).toHaveLength(5);
+    expect(weeklyTotal(s)).toBe(sum);
+  });
+
+  it("rental total is 0 for invalid weeks", () => {
+    expect(rentalTotal(s, 0)).toBe(0);
+    expect(rentalTotal(s, 1.5)).toBe(0);
+  });
+
+  it("empty selection totals 0", () => {
+    expect(weeklyTotal(emptySelection)).toBe(0);
+  });
+});
+
+describe("reset and hydrate", () => {
+  it("reset empties the selection", () => {
+    const s: Selection = { deskId: "desk-oak-standing", monitorIds: ["monitor-24-fhd"], accessoryIds: ["plants"] };
+    expect(reduce(s, { type: "reset" })).toEqual(emptySelection);
+  });
+
+  it("hydrate sanitizes its payload", () => {
+    const s = reduce(emptySelection, {
+      type: "hydrate",
+      selection: { deskId: "nope", monitorIds: ["monitor-27-4k"], accessoryIds: [] },
+    });
+    expect(s).toEqual({ monitorIds: ["monitor-27-4k"], accessoryIds: [] });
+  });
+});
+
+describe("parseStoredSelection (corrupt storage)", () => {
+  it("returns empty for missing or invalid JSON", () => {
+    expect(parseStoredSelection(null)).toEqual(emptySelection);
+    expect(parseStoredSelection("")).toEqual(emptySelection);
+    expect(parseStoredSelection("{not json")).toEqual(emptySelection);
+    expect(parseStoredSelection("42")).toEqual(emptySelection);
+    expect(parseStoredSelection("null")).toEqual(emptySelection);
+    expect(parseStoredSelection('{"monitorIds":"x","accessoryIds":{}}')).toEqual(emptySelection);
+  });
+
+  it("drops unknown ids, caps monitors at 3, dedupes accessories", () => {
+    const raw = JSON.stringify({
+      deskId: "desk-oak-standing",
+      chairId: "ghost-chair",
+      monitorIds: ["monitor-24-fhd", "bogus", "monitor-27-4k", "monitor-24-fhd", "monitor-27-4k", 7],
+      accessoryIds: ["plants", "plants", "unicorn", "surfboard", "desk-oak-standing"],
+    });
+    expect(parseStoredSelection(raw)).toEqual({
+      deskId: "desk-oak-standing",
+      monitorIds: ["monitor-24-fhd", "monitor-27-4k", "monitor-24-fhd"],
+      accessoryIds: ["plants", "surfboard"],
+    });
+  });
+
+  it("round-trips a valid selection", () => {
+    const s: Selection = {
+      deskId: "desk-minimal-white",
+      chairId: "chair-lounge-task",
+      monitorIds: ["monitor-27-4k"],
+      accessoryIds: ["motorbike", "garage-space"],
+    };
+    expect(parseStoredSelection(JSON.stringify(s))).toEqual(s);
+    expect(getItem("motorbike")?.weeklyPrice).toBe(60);
+  });
+});
