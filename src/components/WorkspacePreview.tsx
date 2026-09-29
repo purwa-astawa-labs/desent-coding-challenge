@@ -24,9 +24,29 @@ function layersFor(selection: Selection): Layer[] {
   return layers.sort((a, b) => a.box.z - b.box.z);
 }
 
+/** The scene layers only (base room + one image per selected item). Sized by its parent. */
+export function SceneLayers({ selection }: { selection: Selection }) {
+  return (
+    <>
+      {/* eslint-disable-next-line @next/next/no-img-element -- plain img keeps Vercel image optimization out of play */}
+      <img src={SCENE_IMAGE} alt="" className="absolute inset-0 h-full w-full select-none" draggable={false} />
+      {layersFor(selection).map(({ key, item, box }) => (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img
+          key={key}
+          src={item.image}
+          alt=""
+          draggable={false}
+          className="absolute h-auto select-none"
+          style={{ left: `${box.left}%`, top: `${box.top}%`, width: `${box.width}%`, zIndex: box.z }}
+        />
+      ))}
+    </>
+  );
+}
+
 export function WorkspacePreview() {
   const { selection, hydrated } = useConfigurator();
-  const layers = hydrated ? layersFor(selection) : [];
   const names = lineItems(selection).map((l) => l.item.name);
   const label = !hydrated
     ? "Workspace preview loading"
@@ -43,22 +63,10 @@ export function WorkspacePreview() {
     >
       {hydrated ? (
         <>
-          {/* eslint-disable-next-line @next/next/no-img-element -- plain img keeps Vercel image optimization out of play */}
-          <img src={SCENE_IMAGE} alt="" className="absolute inset-0 h-full w-full select-none" draggable={false} />
-          {layers.map(({ key, item, box }) => (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img
-              key={key}
-              src={item.image}
-              alt=""
-              draggable={false}
-              className="absolute h-auto select-none"
-              style={{ left: `${box.left}%`, top: `${box.top}%`, width: `${box.width}%`, zIndex: box.z }}
-            />
-          ))}
-          {layers.length === 0 && (
+          <SceneLayers selection={selection} />
+          {names.length === 0 && (
             <p className="absolute inset-x-0 bottom-3 text-center text-sm text-stone-500">
-              Pick a desk to start building
+              Choose a preset or pick a desk to start building
             </p>
           )}
         </>

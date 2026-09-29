@@ -36,7 +36,13 @@ A vision to realize: people renting a workspace setup cannot see what their desk
   - **intent:** User's configuration survives a page reload in the same browser.
   - **success:** After selecting items and reloading, the same selection and preview are restored.
 
+- **CAP-8**
+  - **intent:** When the workspace is empty, user can start from a ready-made preset (Dual Monitor, Triple Monitor, Standing Desk, Gaming) and keep editing it.
+  - **success:** With nothing selected, the presets are offered; picking one fills the selection and preview with that setup, and every item remains changeable.
+
 ## Constraints
+
+- The preview fills the screen; the options live in a drawer (bottom sheet on phones, collapsible side panel on desktop) that keeps the weekly total and checkout reachable.
 
 - Every selectable item must have its own image in the layered preview; an item without one cannot be offered, because changing the visual is the product's core promise.
 - Prices are weekly rental prices, not purchase prices; every price and total is labelled per week.

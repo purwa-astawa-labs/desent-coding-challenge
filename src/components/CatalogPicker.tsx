@@ -40,7 +40,7 @@ function SingleChoice({ category }: { category: "desk" | "chair" }) {
   const { selection, dispatch } = useConfigurator();
   const current = category === "desk" ? selection.deskId : selection.chairId;
   return (
-    <ul className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+    <ul className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-2">
       {itemsInCategory(category).map((item) => {
         const selected = current === item.id;
         return (
@@ -67,7 +67,7 @@ function Monitors() {
   const full = selection.monitorIds.length >= MAX_MONITORS;
   return (
     <div className="space-y-3">
-      <ul className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+      <ul className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-2">
         {itemsInCategory("monitor").map((item) => {
           const count = selection.monitorIds.filter((id) => id === item.id).length;
           return (
@@ -130,7 +130,7 @@ function Monitors() {
 function Accessories() {
   const { selection, dispatch } = useConfigurator();
   return (
-    <ul className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+    <ul className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-2">
       {itemsInCategory("accessory").map((item) => {
         const selected = selection.accessoryIds.includes(item.id);
         return (
@@ -182,7 +182,7 @@ export function CatalogPicker() {
         {categories.map(({ category, title }) => (
           <section key={category} className="space-y-3">
             <h2 className="text-lg font-semibold text-stone-900">{title}</h2>
-            <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+            <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-2">
               {itemsInCategory(category).map((item) => (
                 <div key={item.id} className="aspect-[4/5] animate-pulse rounded-xl bg-stone-200" />
               ))}

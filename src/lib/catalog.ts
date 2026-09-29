@@ -56,6 +56,7 @@ export const catalog: readonly CatalogItem[] = [
   { id: "chair-lounge-task", category: "chair", name: "Lounge Task Chair", weeklyPrice: 20, image: "/items/chair-lounge-task.svg", layer: CHAIR_LAYER },
   { id: "chair-ergo-mesh", category: "chair", name: "Ergo Mesh Chair", weeklyPrice: 25, image: "/items/chair-ergo-mesh.svg", layer: CHAIR_LAYER },
   { id: "chair-executive-leather", category: "chair", name: "Executive Leather Chair", weeklyPrice: 35, image: "/items/chair-executive-leather.svg", layer: CHAIR_LAYER },
+  { id: "chair-gaming", category: "chair", name: "Gaming Chair", weeklyPrice: 30, image: "/items/chair-gaming.svg", layer: CHAIR_LAYER },
 
   // Monitors — 0–3, repeatable. Preview uses monitorSlots[i] for the box.
   { id: "monitor-24-fhd", category: "monitor", name: '24" Full HD Monitor', weeklyPrice: 12, image: "/items/monitor-24-fhd.svg", layer: monitorSlots[0] },

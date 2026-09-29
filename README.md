@@ -1,6 +1,6 @@
 # Design Your Workspace
 
-A visual rental configurator. Pick a desk, a chair, up to three monitors and any accessories, watch a 2D layered preview of the workspace update as you go, then finish at a checkout summary with weekly and rental totals.
+A visual rental configurator. The 2D layered preview of the workspace fills the screen; the options live in a drawer (a bottom sheet on phones, a side panel on desktop). Start from a preset (Dual Monitor, Triple Monitor, Standing Desk, Gaming) or pick a desk, a chair, up to three monitors and any accessories, watch the preview update as you go, then finish at a checkout summary with weekly and rental totals.
 
 - All prices are weekly rental prices in USD.
 - The selection is saved in the browser (`localStorage`) and survives reloads.
@@ -49,8 +49,9 @@ public/scene/room.svg        base scene (800×600, 4:3)
 public/items/*.svg           one image per catalog item
 src/lib/catalog.ts           catalog: items, prices, images, preview layer boxes
 src/lib/configurator.ts      selection reducer, totals, storage parsing (pure)
+src/lib/presets.ts           ready-made setups offered when the workspace is empty
 src/lib/checkout.ts          checkout validation (pure)
-src/components/              provider (state + localStorage), preview, picker, summary bar
+src/components/              provider (state + localStorage), full-screen configurator + drawer, preview, presets, picker, summary bar
 src/app/page.tsx             configurator page
 src/app/checkout/page.tsx    checkout page
 ```
@@ -85,6 +86,7 @@ Everything lives in `src/lib/catalog.ts`:
 
 - Change `name` or `weeklyPrice` (USD per week) on any item.
 - To add an item, add an entry with a unique `id`, a `category` (`desk`, `chair`, `monitor` or `accessory`), an `image` and a `layer` box. Every item needs its own image.
+- Presets live in `src/lib/presets.ts`; each is a full selection (ids must exist in the catalog — a unit test checks this).
 - Selection rules are fixed by category: exactly one desk and one chair, 0–3 monitors (`MAX_MONITORS`), and each accessory at most once.
 
 The unit test `catalog › matches catalog.md items and prices` pins the seed catalog. Update it when you change items or prices on purpose.

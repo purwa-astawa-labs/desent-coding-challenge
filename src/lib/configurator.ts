@@ -19,6 +19,7 @@ export type SelectionAction =
   | { type: "removeMonitor"; index: number }
   | { type: "toggleAccessory"; id: string }
   | { type: "reset" }
+  | { type: "applyPreset"; selection: Selection }
   | { type: "hydrate"; selection: Selection };
 
 export function selectionReducer(state: Selection, action: SelectionAction): Selection {
@@ -45,6 +46,7 @@ export function selectionReducer(state: Selection, action: SelectionAction): Sel
       };
     case "reset":
       return emptySelection;
+    case "applyPreset":
     case "hydrate":
       return sanitizeSelection(action.selection);
     default:

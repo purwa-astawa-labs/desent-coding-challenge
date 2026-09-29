@@ -23,6 +23,7 @@ describe("catalog", () => {
       "Lounge Task Chair": 20,
       "Ergo Mesh Chair": 25,
       "Executive Leather Chair": 35,
+      "Gaming Chair": 30,
       '24" Full HD Monitor': 12,
       '27" 4K Monitor': 20,
       Plants: 5,
@@ -33,7 +34,7 @@ describe("catalog", () => {
       "Garage Space": 40,
     });
     expect(itemsInCategory("desk")).toHaveLength(3);
-    expect(itemsInCategory("chair")).toHaveLength(3);
+    expect(itemsInCategory("chair")).toHaveLength(4);
     expect(itemsInCategory("monitor")).toHaveLength(2);
     expect(itemsInCategory("accessory")).toHaveLength(6);
   });
