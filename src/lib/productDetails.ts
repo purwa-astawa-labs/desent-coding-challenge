@@ -44,17 +44,6 @@ export const productDetails: Readonly<Record<string, ProductDetails>> = {
     ],
     images: [],
   },
-  "desk-walnut-executive": {
-    description: "A generous walnut desk with built-in cable management and a drawer, made for multi-monitor setups.",
-    specs: [
-      s("Dimensions", "160 × 80 × 75 cm"),
-      s("Top", "Walnut veneer, satin lacquer"),
-      s("Storage", "1 soft-close drawer"),
-      s("Cable management", "Under-desk tray + grommets"),
-      s("Max load", "80 kg"),
-    ],
-    images: [],
-  },
 
   // Chairs
   "chair-lounge-task": {
@@ -75,16 +64,6 @@ export const productDetails: Readonly<Record<string, ProductDetails>> = {
       s("Armrests", "3D adjustable"),
       s("Adjustments", "Height, tilt lock, seat depth"),
       s("Max load", "130 kg"),
-    ],
-    images: [],
-  },
-  "chair-executive-leather": {
-    description: "High-back executive chair in bonded leather with padded armrests and a synchro-tilt mechanism.",
-    specs: [
-      s("Seat height", "47–57 cm"),
-      s("Upholstery", "Bonded leather, black"),
-      s("Mechanism", "Synchro-tilt with tension control"),
-      s("Armrests", "Padded, fixed"),
     ],
     images: [],
   },
@@ -242,12 +221,19 @@ export function getDetails(id: string): ProductDetails | undefined {
 
 export type GallerySlide = { kind: "image"; src: string; label: string } | { kind: "scene"; label: string };
 
-/** Gallery order: main image, the "In your space" scene view, then any extra photos. Never empty slots. */
-export function gallerySlides(item: { id: string; name: string; image: string }, zoneTitle: string): GallerySlide[] {
+/**
+ * Gallery order: the card image (thumbnail, else the scene image), the "In your space" scene view,
+ * the scene image as a back view when a separate thumbnail exists, then any extra photos. Never empty slots.
+ */
+export function gallerySlides(
+  item: { id: string; name: string; image: string; thumbnail?: string },
+  zoneTitle: string,
+): GallerySlide[] {
   const extra = (getDetails(item.id)?.images ?? []).filter((src) => src.trim() !== "");
   return [
-    { kind: "image", src: item.image, label: item.name },
+    { kind: "image", src: item.thumbnail ?? item.image, label: item.name },
     { kind: "scene", label: `In your space (${zoneTitle.toLowerCase()})` },
+    ...(item.thumbnail ? [{ kind: "image" as const, src: item.image, label: `${item.name}, back` }] : []),
     ...extra.map((src, i) => ({ kind: "image" as const, src, label: `${item.name}, photo ${i + 1}` })),
   ];
 }

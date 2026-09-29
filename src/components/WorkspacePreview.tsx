@@ -31,7 +31,7 @@ export function SceneLayers({ selection, zone = "workspace" }: { selection: Sele
   return (
     <>
       {/* eslint-disable-next-line @next/next/no-img-element -- plain img keeps Vercel image optimization out of play */}
-      <img src={scene.image} alt="" className="absolute inset-0 h-full w-full select-none" draggable={false} />
+      <img src={scene.image} alt="" className="absolute inset-0 h-full w-full select-none object-cover" draggable={false} />
       {layersFor(selection, zone).map(({ key, item, box }) => (
         // eslint-disable-next-line @next/next/no-img-element
         <img
@@ -41,8 +41,13 @@ export function SceneLayers({ selection, zone = "workspace" }: { selection: Sele
           draggable={false}
           // Marks a freshly mounted layer; WorkspacePreview animates it in once and clears the mark.
           data-new=""
-          className="absolute h-auto select-none"
-          style={{ left: `${box.left}%`, top: `${box.top}%`, width: `${box.width}%`, zIndex: box.z }}
+          className="absolute h-auto select-none transition-[left] duration-300 ease-out motion-reduce:transition-none"
+          style={{
+            left: `${box.left}%`,
+            ...(box.bottom !== undefined ? { bottom: `${100 - box.bottom}%` } : { top: `${box.top}%` }),
+            width: `${box.width}%`,
+            zIndex: box.z,
+          }}
         />
       ))}
     </>

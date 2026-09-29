@@ -6,6 +6,7 @@ import {
   type Zone,
   GARAGE_SPACE_ID,
   MAX_MONITORS,
+  cardImage,
   formatPrice,
   getItem,
   groupMeta,
@@ -43,7 +44,7 @@ export function ItemVisual({ item, selected = false }: { item: CatalogItem; sele
     <span className="relative block aspect-[4/3] w-full overflow-hidden rounded-control bg-surface">
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img
-        src={item.image}
+        src={cardImage(item)}
         alt=""
         className="absolute inset-0 h-full w-full object-contain p-3 transition duration-300 ease-out group-enabled:group-hover:scale-103 motion-reduce:transition-none motion-reduce:group-hover:scale-100"
         draggable={false}

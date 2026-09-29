@@ -42,3 +42,13 @@ describe("gallerySlides", () => {
     expect(slides[1].label).toBe("In your space (lounge)");
   });
 });
+
+describe("gallerySlides with a front-view thumbnail", () => {
+  it("shows the thumbnail first and the scene image as a back view", () => {
+    const item = { id: "chair-gaming", name: "Gaming Chair", image: "/items/chair-gaming.webp", thumbnail: "/items/chair-gaming-front.webp" };
+    const slides = gallerySlides(item, "Workspace");
+    expect(slides.map((s) => s.kind)).toEqual(["image", "scene", "image"]);
+    expect(slides[0]).toMatchObject({ src: "/items/chair-gaming-front.webp" });
+    expect(slides[2]).toMatchObject({ src: "/items/chair-gaming.webp", label: "Gaming Chair, back" });
+  });
+});

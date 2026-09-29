@@ -42,3 +42,6 @@ next-env.d.ts
 
 # bmad (machine-specific rendered workflows)
 /_bmad/render/
+
+# full-size source images (not served; heavy)
+/design/*-originals/

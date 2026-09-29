@@ -49,7 +49,7 @@ You don't need any environment variables or paid add-ons. Images are served as p
 ## Project layout
 
 ```
-public/scene/*.svg           zone scenes: room (workspace), lounge, garage (800×600, 4:3)
+public/scene/*.webp          zone scenes: room (workspace), lounge, garage (photos, 1600×1200 WebP)
 public/items/*.svg           one image per catalog item
 src/lib/catalog.ts           catalog: items, prices, images, preview layer boxes
 src/lib/configurator.ts      selection reducer, totals, storage parsing (pure)
@@ -81,9 +81,9 @@ Each item's image path is the `image` field of its entry in `src/lib/catalog.ts`
 | Surfboard | 80×300 |
 | Motorbike | 200×130 |
 | Garage Space | 208×260 |
-| Scene (`public/scene/room.svg`) | 800×600 |
+| Scenes (`public/scene/*.webp`) | 1600×1200 (4:3); originals in `design/scene-originals/` |
 
-Use transparent backgrounds so the layers show through one another. If an image has a different shape, adjust its `layer` box (`left`, `top`, `width`, `z`) in `catalog.ts`. `z` sets the stacking order, and higher values draw in front. Monitors use the three `monitorSlots` boxes instead of their own `layer`.
+Use transparent backgrounds so the layers show through one another. If an image has a different shape, adjust its `layer` box (`left`, `top` or `bottom`, `width`, `z`) in `catalog.ts`. `z` sets the stacking order, and higher values draw in front. Monitors only use their `width`: `monitorBoxes()` in `src/lib/scene.ts` stands them on the desk by count (one centered, two side by side, three as a bank).
 
 ## Product details, specs and photos
 

@@ -17,16 +17,21 @@ export type Zone = "workspace" | "lounge" | "garage";
 /** How items are grouped in pickers; each group belongs to one zone. */
 export type Group = "desk" | "chair" | "monitor" | "desk-accessory" | "lounge" | "garage";
 
-export interface LayerBox {
+/**
+ * An image's box in a scene. Placed by its top edge (`top`) or, for things that stand on a surface
+ * (monitors on the desk), by its bottom edge (`bottom`); the height follows from the image's ratio.
+ */
+export type LayerBox = {
   /** Stacking order; higher draws in front. */
   z: number;
   /** % of scene width. */
   left: number;
-  /** % of scene height. */
-  top: number;
   /** % of scene width. */
   width: number;
-}
+} & (
+  | { /** % of scene height. */ top: number; bottom?: never }
+  | { /** % of scene height where the bottom edge sits. */ bottom: number; top?: never }
+);
 
 export interface CatalogItem {
   id: string;
@@ -35,8 +40,10 @@ export interface CatalogItem {
   name: string;
   /** USD per week. */
   weeklyPrice: number;
-  /** Path under /public. */
+  /** Path under /public. The image layered into the scene (for chairs, the rear view). */
   image: string;
+  /** Optional path under /public for cards, pickers and the details gallery (e.g. a chair's front view). Falls back to `image`. */
+  thumbnail?: string;
   /** Box in its zone's scene. Omitted for the garage space, which is shown as the garage scene itself. */
   layer?: LayerBox;
 }
@@ -44,40 +51,40 @@ export interface CatalogItem {
 export const SCENE_ASPECT_RATIO = "4 / 3";
 
 export const zones: readonly { zone: Zone; title: string; image: string }[] = [
-  { zone: "workspace", title: "Workspace", image: "/scene/room.svg" },
-  { zone: "lounge", title: "Lounge", image: "/scene/lounge.svg" },
-  { zone: "garage", title: "Garage", image: "/scene/garage.svg" },
+  { zone: "workspace", title: "Workspace", image: "/scene/room.webp" },
+  { zone: "lounge", title: "Lounge", image: "/scene/lounge.webp" },
+  { zone: "garage", title: "Garage", image: "/scene/garage.webp" },
 ];
 
 /** Renting the garage space is required for any garage gear. */
 export const GARAGE_SPACE_ID = "garage-space";
 export const MAX_MONITORS = 3;
 
-/** Monitor boxes on the desk surface; slot i holds the i-th selected monitor. */
-export const monitorSlots: readonly [LayerBox, LayerBox, LayerBox] = [
-  { z: 20, left: 36, top: 29.6667, width: 12.5 },
-  { z: 20, left: 49.75, top: 29.6667, width: 12.5 },
-  { z: 20, left: 63.5, top: 29.6667, width: 12.5 },
-];
+/** Horizontal center of the desks, % of scene width. */
+export const DESK_CENTER = 56;
+/** Where monitor bases stand on the desk surface, % of scene height. */
+export const MONITOR_BASE = 46;
 
 const DESK_LAYER: LayerBox = { z: 10, left: 30, top: 45, width: 52 };
-const CHAIR_LAYER: LayerBox = { z: 50, left: 42, top: 55, width: 20 };
+// Photo chairs (rear view): ~65 cm wide against the 140 cm desk, centered on the desk, castors in front of its feet.
+const CHAIR_LAYER: LayerBox = { z: 50, left: 44, top: 47, width: 24 };
+// Taller chairs share the width and castor line (93.7% of the scene); their extra height goes upward.
+const TALL_CHAIR_LAYER: LayerBox = { z: 50, left: 44, top: 30.75, width: 24 };
+const GAMING_CHAIR_LAYER: LayerBox = { z: 50, left: 44, top: 31.85, width: 24 };
 
 export const catalog: readonly CatalogItem[] = [
   // Desks — exactly one
-  { id: "desk-minimal-white", category: "desk", group: "desk", name: "Minimal White Desk", weeklyPrice: 30, image: "/items/desk-minimal-white.svg", layer: DESK_LAYER },
-  { id: "desk-oak-standing", category: "desk", group: "desk", name: "Oak Standing Desk", weeklyPrice: 45, image: "/items/desk-oak-standing.svg", layer: DESK_LAYER },
-  { id: "desk-walnut-executive", category: "desk", group: "desk", name: "Walnut Executive Desk", weeklyPrice: 55, image: "/items/desk-walnut-executive.svg", layer: DESK_LAYER },
+  { id: "desk-minimal-white", category: "desk", group: "desk", name: "Minimal White Desk", weeklyPrice: 30, image: "/items/desk-minimal-white.webp", layer: DESK_LAYER },
+  { id: "desk-oak-standing", category: "desk", group: "desk", name: "Oak Standing Desk", weeklyPrice: 45, image: "/items/desk-oak-standing.webp", layer: DESK_LAYER },
 
   // Chairs — exactly one
-  { id: "chair-lounge-task", category: "chair", group: "chair", name: "Lounge Task Chair", weeklyPrice: 20, image: "/items/chair-lounge-task.svg", layer: CHAIR_LAYER },
-  { id: "chair-ergo-mesh", category: "chair", group: "chair", name: "Ergo Mesh Chair", weeklyPrice: 25, image: "/items/chair-ergo-mesh.svg", layer: CHAIR_LAYER },
-  { id: "chair-executive-leather", category: "chair", group: "chair", name: "Executive Leather Chair", weeklyPrice: 35, image: "/items/chair-executive-leather.svg", layer: CHAIR_LAYER },
-  { id: "chair-gaming", category: "chair", group: "chair", name: "Gaming Chair", weeklyPrice: 30, image: "/items/chair-gaming.svg", layer: CHAIR_LAYER },
+  { id: "chair-lounge-task", category: "chair", group: "chair", name: "Lounge Task Chair", weeklyPrice: 20, image: "/items/chair-lounge-task.webp", thumbnail: "/items/chair-lounge-task-front.webp", layer: CHAIR_LAYER },
+  { id: "chair-ergo-mesh", category: "chair", group: "chair", name: "Ergo Mesh Chair", weeklyPrice: 25, image: "/items/chair-ergo-mesh.webp", thumbnail: "/items/chair-ergo-mesh-front.webp", layer: TALL_CHAIR_LAYER },
+  { id: "chair-gaming", category: "chair", group: "chair", name: "Gaming Chair", weeklyPrice: 30, image: "/items/chair-gaming.webp", thumbnail: "/items/chair-gaming-front.webp", layer: GAMING_CHAIR_LAYER },
 
-  // Monitors — 0–3, repeatable. Preview uses monitorSlots[i] for the box.
-  { id: "monitor-24-fhd", category: "monitor", group: "monitor", name: '24" Full HD Monitor', weeklyPrice: 12, image: "/items/monitor-24-fhd.svg", layer: monitorSlots[0] },
-  { id: "monitor-27-4k", category: "monitor", group: "monitor", name: '27" 4K Monitor', weeklyPrice: 20, image: "/items/monitor-27-4k.svg", layer: monitorSlots[0] },
+  // Monitors — 0–3, repeatable. Only `width` is used: the preview lays them out by count (see monitorBoxes).
+  { id: "monitor-24-fhd", category: "monitor", group: "monitor", name: '24" Full HD Monitor', weeklyPrice: 12, image: "/items/monitor-24-fhd.webp", layer: { z: 20, left: DESK_CENTER - 9, bottom: MONITOR_BASE, width: 18 } },
+  { id: "monitor-27-4k", category: "monitor", group: "monitor", name: '27" 4K Monitor', weeklyPrice: 20, image: "/items/monitor-27-4k.webp", layer: { z: 20, left: DESK_CENTER - 10.25, bottom: MONITOR_BASE, width: 20.5 } },
 
   // Desk accessories — shown on the workspace scene
   { id: "plants", category: "accessory", group: "desk-accessory", name: "Plants", weeklyPrice: 5, image: "/items/plants.svg", layer: { z: 30, left: 76.75, top: 33, width: 5 } },
@@ -98,6 +105,11 @@ export const catalog: readonly CatalogItem[] = [
 ];
 
 const byId = new Map(catalog.map((item) => [item.id, item]));
+
+/** The image to show on product cards and as the first details photo. */
+export function cardImage(item: Pick<CatalogItem, "image" | "thumbnail">): string {
+  return item.thumbnail ?? item.image;
+}
 
 export function getItem(id: string): CatalogItem | undefined {
   return byId.get(id);
@@ -141,7 +153,7 @@ export function zoneOf(item: CatalogItem): Zone {
 export const hotspots: readonly { group: Group; x: number; y: number }[] = [
   { group: "monitor", x: 56, y: 36 },
   { group: "desk", x: 37, y: 55 },
-  { group: "chair", x: 52, y: 68 },
+  { group: "chair", x: 56, y: 62 },
   { group: "desk-accessory", x: 79, y: 39 },
   { group: "lounge", x: 50, y: 58 },
   { group: "garage", x: 50, y: 64 },

@@ -25,8 +25,8 @@ export const presets: readonly Preset[] = [
     name: "Triple Monitor",
     description: 'Three 27" 4K screens for maximum screen space',
     selection: {
-      deskId: "desk-walnut-executive",
-      chairId: "chair-executive-leather",
+      deskId: "desk-oak-standing",
+      chairId: "chair-ergo-mesh",
       monitorIds: ["monitor-27-4k", "monitor-27-4k", "monitor-27-4k"],
       accessoryIds: [],
     },
@@ -47,7 +47,7 @@ export const presets: readonly Preset[] = [
     name: "Gaming",
     description: "Gaming chair with dual 4K screens",
     selection: {
-      deskId: "desk-walnut-executive",
+      deskId: "desk-oak-standing",
       chairId: "chair-gaming",
       monitorIds: ["monitor-27-4k", "monitor-27-4k"],
       accessoryIds: [],

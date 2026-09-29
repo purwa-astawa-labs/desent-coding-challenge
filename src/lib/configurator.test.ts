@@ -22,10 +22,8 @@ describe("catalog", () => {
     expect(prices).toEqual({
       "Minimal White Desk": 30,
       "Oak Standing Desk": 45,
-      "Walnut Executive Desk": 55,
       "Lounge Task Chair": 20,
       "Ergo Mesh Chair": 25,
-      "Executive Leather Chair": 35,
       "Gaming Chair": 30,
       '24" Full HD Monitor': 12,
       '27" 4K Monitor': 20,
@@ -41,8 +39,8 @@ describe("catalog", () => {
       Surfboard: 12,
       "Sport Gear": 10,
     });
-    expect(itemsInCategory("desk")).toHaveLength(3);
-    expect(itemsInCategory("chair")).toHaveLength(4);
+    expect(itemsInCategory("desk")).toHaveLength(2);
+    expect(itemsInCategory("chair")).toHaveLength(3);
     expect(itemsInCategory("monitor")).toHaveLength(2);
     expect(itemsInCategory("accessory")).toHaveLength(11);
     expect(itemsInGroup("desk-accessory").map((i) => i.id)).toEqual(["plants", "desk-lamp", "headphones"]);
@@ -60,10 +58,14 @@ describe("catalog", () => {
     }
   });
 
+  it("thumbnails, when present, are item images", () => {
+    for (const i of catalog) if (i.thumbnail) expect(i.thumbnail).toMatch(/^\/items\/.+\.(svg|webp|png)$/);
+  });
+
   it("gives every item its own image", () => {
     const images = catalog.map((i) => i.image);
     expect(new Set(images).size).toBe(catalog.length);
-    images.forEach((src) => expect(src).toMatch(/^\/items\/.+\.svg$/));
+    images.forEach((src) => expect(src).toMatch(/^\/items\/.+\.(svg|webp|png)$/));
   });
 
   it("places every item except the garage space in its scene", () => {
@@ -72,20 +74,20 @@ describe("catalog", () => {
 });
 
 describe("desk and chair", () => {
-  it("swaps desk: Walnut replaces Oak", () => {
+  it("swaps desk: White replaces Oak", () => {
     const s = reduce(reduce(emptySelection, { type: "selectDesk", id: "desk-oak-standing" }), {
       type: "selectDesk",
-      id: "desk-walnut-executive",
+      id: "desk-minimal-white",
     });
-    expect(s.deskId).toBe("desk-walnut-executive");
-    expect(lineItems(s).map((l) => l.item.id)).toEqual(["desk-walnut-executive"]);
-    expect(weeklyTotal(s)).toBe(55);
+    expect(s.deskId).toBe("desk-minimal-white");
+    expect(lineItems(s).map((l) => l.item.id)).toEqual(["desk-minimal-white"]);
+    expect(weeklyTotal(s)).toBe(30);
   });
 
   it("swaps chair and never holds two", () => {
     let s = reduce(emptySelection, { type: "selectChair", id: "chair-ergo-mesh" });
-    s = reduce(s, { type: "selectChair", id: "chair-executive-leather" });
-    expect(s.chairId).toBe("chair-executive-leather");
+    s = reduce(s, { type: "selectChair", id: "chair-gaming" });
+    expect(s.chairId).toBe("chair-gaming");
     expect(lineItems(s).filter((l) => l.item.category === "chair")).toHaveLength(1);
   });
 
