@@ -266,7 +266,7 @@ function ProductDetailsSheet({ item, onClose }: { item: CatalogItem; onClose: ()
             onClick={onClose}
             className="rounded-xl bg-stone-900 px-5 py-2 text-sm font-semibold text-white hover:bg-stone-700 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-stone-900"
           >
-            Done
+            Select
           </button>
         </footer>
       </div>
