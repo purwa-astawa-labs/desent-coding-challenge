@@ -29,22 +29,19 @@ describe("catalog", () => {
       '27" 4K Monitor': 20,
       "Desk Plant": 5,
       "Desk Lamp": 6,
-      Sofa: 35,
       "Bean Bag": 12,
-      "Floor Plant": 7,
       "Coffee Station": 15,
       "Garage Space": 40,
-      Motorbike: 60,
+      "Yamaha NMAX": 60,
       Surfboard: 12,
-      "Sport Gear": 10,
     });
     expect(itemsInCategory("desk")).toHaveLength(2);
     expect(itemsInCategory("chair")).toHaveLength(3);
     expect(itemsInCategory("monitor")).toHaveLength(2);
-    expect(itemsInCategory("accessory")).toHaveLength(10);
+    expect(itemsInCategory("accessory")).toHaveLength(7);
     expect(itemsInGroup("desk-accessory").map((i) => i.id)).toEqual(["plants", "desk-lamp"]);
-    expect(itemsInGroup("lounge").map((i) => i.id)).toEqual(["sofa", "bean-bag", "floor-plant", "coffee-station"]);
-    expect(itemsInGroup("garage").map((i) => i.id)).toEqual(["garage-space", "motorbike", "surfboard", "sport-gear"]);
+    expect(itemsInGroup("lounge").map((i) => i.id)).toEqual(["bean-bag", "coffee-station"]);
+    expect(itemsInGroup("garage").map((i) => i.id)).toEqual(["garage-space", "motorbike", "surfboard"]);
   });
 
   it("has one on-scene hotspot per group", () => {
@@ -129,10 +126,10 @@ describe("monitors", () => {
 
 describe("accessories", () => {
   it("toggles Plants off without affecting others", () => {
-    const s: Selection = { ...emptySelection, accessoryIds: ["plants", "sofa"] };
+    const s: Selection = { ...emptySelection, accessoryIds: ["plants", "bean-bag"] };
     const next = reduce(s, { type: "toggleAccessory", id: "plants" });
-    expect(next.accessoryIds).toEqual(["sofa"]);
-    expect(reduce(next, { type: "toggleAccessory", id: "plants" }).accessoryIds).toEqual(["sofa", "plants"]);
+    expect(next.accessoryIds).toEqual(["bean-bag"]);
+    expect(reduce(next, { type: "toggleAccessory", id: "plants" }).accessoryIds).toEqual(["bean-bag", "plants"]);
   });
 });
 
@@ -150,8 +147,8 @@ describe("garage rule", () => {
   });
 
   it("removing the garage space removes all gear but nothing else", () => {
-    const s: Selection = { ...emptySelection, accessoryIds: ["plants", "motorbike", "garage-space", "sport-gear", "sofa"] };
-    expect(reduce(s, { type: "toggleAccessory", id: "garage-space" }).accessoryIds).toEqual(["plants", "sofa"]);
+    const s: Selection = { ...emptySelection, accessoryIds: ["plants", "motorbike", "garage-space", "surfboard", "bean-bag"] };
+    expect(reduce(s, { type: "toggleAccessory", id: "garage-space" }).accessoryIds).toEqual(["plants", "bean-bag"]);
   });
 
   it("garage space alone is allowed", () => {
@@ -282,6 +279,6 @@ describe("removeProduct (details sheet)", () => {
     const s: Selection = { ...emptySelection, deskId: "desk-oak-standing", chairId: "chair-gaming" };
     expect(removeProduct(s, "desk-oak-standing")).toBeNull();
     expect(removeProduct(s, "chair-gaming")).toBeNull();
-    expect(removeProduct(s, "sofa")).toBeNull();
+    expect(removeProduct(s, "bean-bag")).toBeNull();
   });
 });

@@ -125,31 +125,12 @@ export const productDetails: Readonly<Record<string, ProductDetails>> = {
   },
 
   // Lounge zone
-  sofa: {
-    description: "A three-seat sofa with deep cushions for breaks, reading or casual meetings.",
-    specs: [
-      s("Dimensions", "210 × 90 × 85 cm"),
-      s("Seats", "3"),
-      s("Upholstery", "Performance fabric, grey"),
-      s("Legs", "Solid oak"),
-    ],
-    images: [],
-  },
   "bean-bag": {
     description: "An oversized bean bag that shapes to you, with a washable cover.",
     specs: [
       s("Dimensions", "100 × 90 cm"),
       s("Cover", "Removable, machine washable"),
       s("Fill", "Recycled EPS beads"),
-    ],
-    images: [],
-  },
-  "floor-plant": {
-    description: "A tall, low-maintenance floor plant in a matte planter that softens any corner.",
-    specs: [
-      s("Height", "About 120 cm"),
-      s("Planter", "Matte ceramic, 30 cm"),
-      s("Care", "Bright indirect light, water weekly"),
     ],
     images: [],
   },
@@ -175,11 +156,12 @@ export const productDetails: Readonly<Record<string, ProductDetails>> = {
     images: [],
   },
   motorbike: {
-    description: "A light, easy-to-ride city motorbike for commuting and weekend trips. Helmet included.",
+    description: "A Yamaha NMAX, the comfortable automatic maxi-scooter you see all over Bali — easy for daily rides and weekend trips. Helmet included.",
     specs: [
-      s("Engine", "125 cc, single cylinder"),
-      s("Licence", "A1 or equivalent"),
-      s("Fuel economy", "About 45 km/L"),
+      s("Engine", "155 cc, single cylinder, automatic"),
+      s("Licence", "A (motorcycle) or equivalent"),
+      s("Fuel economy", "About 40 km/L"),
+      s("Features", "Under-seat storage, ABS"),
       s("Includes", "1 helmet, disc lock"),
     ],
     images: [],
@@ -191,15 +173,6 @@ export const productDetails: Readonly<Record<string, ProductDetails>> = {
       s("Construction", "Soft foam top, HDPE bottom"),
       s("Volume", "56 L"),
       s("Includes", "Leash, 3 fins"),
-    ],
-    images: [],
-  },
-  "sport-gear": {
-    description: "A home fitness kit with adjustable dumbbells, a yoga mat and resistance bands.",
-    specs: [
-      s("Dumbbells", "2 × adjustable, 2–12 kg"),
-      s("Mat", "Yoga mat, 6 mm"),
-      s("Bands", "3 resistance levels"),
     ],
     images: [],
   },

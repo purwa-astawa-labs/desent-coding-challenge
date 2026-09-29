@@ -62,6 +62,8 @@ export const MAX_MONITORS = 3;
 
 /** Horizontal center of the desks, % of scene width. */
 export const DESK_CENTER = 56;
+/** Where things placed against the lounge wall stand: just in front of the wall–floor line (76.8%), % of scene height. */
+export const LOUNGE_FLOOR = 79.5;
 /** Where monitor bases stand on the desk surface, % of scene height. */
 export const MONITOR_BASE = 46;
 
@@ -92,16 +94,13 @@ export const catalog: readonly CatalogItem[] = [
   { id: "desk-lamp", category: "accessory", group: "desk-accessory", name: "Desk Lamp", weeklyPrice: 6, image: "/items/desk-lamp.webp", layer: { z: 15, left: 31, bottom: MONITOR_BASE, width: 5.4 } },
 
   // Lounge zone — own scene
-  { id: "sofa", category: "accessory", group: "lounge", name: "Sofa", weeklyPrice: 35, image: "/items/sofa.svg", layer: { z: 10, left: 30, top: 44, width: 40 } },
-  { id: "bean-bag", category: "accessory", group: "lounge", name: "Bean Bag", weeklyPrice: 12, image: "/items/bean-bag.svg", layer: { z: 20, left: 14, top: 70, width: 16.25 } },
-  { id: "floor-plant", category: "accessory", group: "lounge", name: "Floor Plant", weeklyPrice: 7, image: "/items/floor-plant.svg", layer: { z: 8, left: 78, top: 42, width: 10 } },
-  { id: "coffee-station", category: "accessory", group: "lounge", name: "Coffee Station", weeklyPrice: 15, image: "/items/coffee-station.svg", layer: { z: 6, left: 8, top: 42, width: 15 } },
+  { id: "bean-bag", category: "accessory", group: "lounge", name: "Bean Bag", weeklyPrice: 12, image: "/items/bean-bag.webp", layer: { z: 20, left: 21, bottom: 96, width: 24 } },
+  { id: "coffee-station", category: "accessory", group: "lounge", name: "Coffee Station", weeklyPrice: 15, image: "/items/coffee-station.webp", layer: { z: 6, left: 8, bottom: LOUNGE_FLOOR, width: 18 } },
 
   // Garage — own scene; gear needs the garage space
-  { id: GARAGE_SPACE_ID, category: "accessory", group: "garage", name: "Garage Space", weeklyPrice: 40, image: "/items/garage-space.svg" },
-  { id: "motorbike", category: "accessory", group: "garage", name: "Motorbike", weeklyPrice: 60, image: "/items/motorbike.svg", layer: { z: 10, left: 32, top: 50, width: 36 } },
-  { id: "surfboard", category: "accessory", group: "garage", name: "Surfboard", weeklyPrice: 12, image: "/items/surfboard.svg", layer: { z: 5, left: 6, top: 24, width: 10 } },
-  { id: "sport-gear", category: "accessory", group: "garage", name: "Sport Gear", weeklyPrice: 10, image: "/items/sport-gear.svg", layer: { z: 12, left: 76, top: 60, width: 16 } },
+  { id: GARAGE_SPACE_ID, category: "accessory", group: "garage", name: "Garage Space", weeklyPrice: 40, image: "/items/garage-space.webp" },
+  { id: "motorbike", category: "accessory", group: "garage", name: "Yamaha NMAX", weeklyPrice: 60, image: "/items/motorbike.webp", layer: { z: 10, left: 25, bottom: 97, width: 52 } },
+  { id: "surfboard", category: "accessory", group: "garage", name: "Surfboard", weeklyPrice: 12, image: "/items/surfboard.webp", layer: { z: 5, left: 12, bottom: 83, width: 11.2 } },
 ];
 
 const byId = new Map(catalog.map((item) => [item.id, item]));
@@ -155,8 +154,8 @@ export const hotspots: readonly { group: Group; x: number; y: number }[] = [
   { group: "desk", x: 37, y: 55 },
   { group: "chair", x: 56, y: 62 },
   { group: "desk-accessory", x: 79, y: 39 },
-  { group: "lounge", x: 50, y: 58 },
-  { group: "garage", x: 50, y: 64 },
+  { group: "lounge", x: 22, y: 64 },
+  { group: "garage", x: 50, y: 72 },
 ];
 
 export function formatPrice(amount: number): string {

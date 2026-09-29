@@ -35,7 +35,7 @@ describe("product details", () => {
 
 describe("gallerySlides", () => {
   it("main image, then the in-space view, with no empty slots when there are no extra photos", () => {
-    const item = catalog.find((i) => i.id === "sofa")!;
+    const item = catalog.find((i) => i.id === "coffee-station")!;
     const slides = gallerySlides(item, "Lounge");
     expect(slides.map((s) => s.kind)).toEqual(["image", "scene"]);
     expect(slides[0]).toMatchObject({ kind: "image", src: item.image });
