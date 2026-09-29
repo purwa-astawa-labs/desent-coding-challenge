@@ -1,7 +1,5 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 36 48" width="36" height="48">
-  <rect x="2" y="0" width="32" height="44" rx="3" fill="#44403c"/>
-  <rect x="6" y="4" width="24" height="8" rx="2" fill="#a8a29e"/>
-  <rect x="11" y="26" width="14" height="16" rx="2" fill="#fafaf9"/>
-  <rect x="11" y="28" width="14" height="4" fill="#78350f"/>
-  <rect x="0" y="44" width="36" height="4" rx="2" fill="#292524"/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 150" width="120" height="150">
+  <rect x="4" y="70" width="112" height="80" rx="4" fill="#78350f"/><rect x="10" y="80" width="48" height="60" rx="2" fill="#92400e"/><rect x="62" y="80" width="48" height="60" rx="2" fill="#92400e"/><circle cx="52" cy="110" r="3" fill="#fbbf24"/><circle cx="68" cy="110" r="3" fill="#fbbf24"/><rect x="0" y="64" width="120" height="8" rx="2" fill="#57260c"/>
+  <rect x="20" y="8" width="46" height="56" rx="5" fill="#44403c"/><rect x="26" y="14" width="34" height="10" rx="2" fill="#a8a29e"/><rect x="33" y="40" width="20" height="20" rx="2" fill="#fafaf9"/><path d="M43 44 C38 38 48 34 43 28" stroke="#d6d3d1" stroke-width="2" fill="none"/>
+  <rect x="78" y="44" width="14" height="20" rx="3" fill="#fafaf9"/><rect x="96" y="48" width="14" height="16" rx="3" fill="#ef4444"/>
 </svg>

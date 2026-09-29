@@ -51,11 +51,13 @@ A vision to realize: people renting a workspace setup cannot see what their desk
 
 - Deliverables include a README (run and deploy instructions) and automated tests covering selection rules and pricing.
 
+- The workspace, lounge zone, and garage are separate scenes (visualizers) switched by tabs; desk accessories show on the workspace scene.
+
 ## Non-goals
 
 - Real payment processing, or sending/storing checkout details anywhere.
 - Shareable configuration links.
-- Compatibility rules between items.
+- Compatibility rules between items, other than garage gear requiring the Garage Space.
 - User accounts or authentication.
 - Live inventory or availability tracking.
 - Admin tooling for managing the catalog.

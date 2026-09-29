@@ -1,4 +1,4 @@
-import { type CatalogItem, MAX_MONITORS, getItem, isItemInCategory } from "./catalog";
+import { type CatalogItem, GARAGE_SPACE_ID, MAX_MONITORS, getItem, isGarageGear, isItemInCategory } from "./catalog";
 
 /** The user's workspace. Pure data; no UI concerns. */
 export interface Selection {
@@ -38,12 +38,7 @@ export function selectionReducer(state: Selection, action: SelectionAction): Sel
       return { ...state, monitorIds: state.monitorIds.filter((_, i) => i !== action.index) };
     case "toggleAccessory":
       if (!isItemInCategory(action.id, "accessory")) return state;
-      return {
-        ...state,
-        accessoryIds: state.accessoryIds.includes(action.id)
-          ? state.accessoryIds.filter((id) => id !== action.id)
-          : [...state.accessoryIds, action.id],
-      };
+      return { ...state, accessoryIds: toggleAccessory(state.accessoryIds, action.id) };
     case "reset":
       return emptySelection;
     case "applyPreset":
@@ -52,6 +47,22 @@ export function selectionReducer(state: Selection, action: SelectionAction): Sel
     default:
       return state;
   }
+}
+
+/**
+ * Toggle one accessory, keeping the garage rule: adding gear also adds the garage space,
+ * and removing the garage space removes all gear.
+ */
+function toggleAccessory(ids: string[], id: string): string[] {
+  if (ids.includes(id)) {
+    return id === GARAGE_SPACE_ID ? ids.filter((x) => x !== id && !isGarageGear(x)) : ids.filter((x) => x !== id);
+  }
+  const next = [...ids, id];
+  return isGarageGear(id) && !ids.includes(GARAGE_SPACE_ID) ? [...next, GARAGE_SPACE_ID] : next;
+}
+
+export function hasGarageSpace(selection: Selection): boolean {
+  return selection.accessoryIds.includes(GARAGE_SPACE_ID);
 }
 
 export interface LineItem {
@@ -93,9 +104,12 @@ export function sanitizeSelection(value: unknown): Selection {
   const v = value as Record<string, unknown>;
   const monitors = Array.isArray(v.monitorIds) ? v.monitorIds : [];
   const accessories = Array.isArray(v.accessoryIds) ? v.accessoryIds : [];
+  const accessoryIds = [...new Set(accessories.filter((id): id is string => isItemInCategory(id, "accessory")))];
+  // Garage rule: gear without the space brings the space along.
+  if (accessoryIds.some(isGarageGear) && !accessoryIds.includes(GARAGE_SPACE_ID)) accessoryIds.push(GARAGE_SPACE_ID);
   const selection: Selection = {
     monitorIds: monitors.filter((id): id is string => isItemInCategory(id, "monitor")).slice(0, MAX_MONITORS),
-    accessoryIds: [...new Set(accessories.filter((id): id is string => isItemInCategory(id, "accessory")))],
+    accessoryIds,
   };
   if (isItemInCategory(v.deskId, "desk")) selection.deskId = v.deskId;
   if (isItemInCategory(v.chairId, "chair")) selection.chairId = v.chairId;

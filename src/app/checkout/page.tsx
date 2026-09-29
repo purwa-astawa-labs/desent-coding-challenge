@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useState, type FormEvent } from "react";
 import { useConfigurator } from "@/components/ConfiguratorProvider";
-import { WorkspacePreview } from "@/components/WorkspacePreview";
+import { SelectionPreviews } from "@/components/WorkspacePreview";
 import { formatPrice } from "@/lib/catalog";
 import {
   type CheckoutErrors,
@@ -169,7 +169,7 @@ export default function CheckoutPage() {
       <div className="mt-6 grid grid-cols-1 gap-6 md:grid-cols-2">
         <section className="min-w-0 space-y-4 rounded-2xl border border-stone-200 bg-white p-5">
           <h2 className="text-lg font-semibold">Your workspace</h2>
-          <WorkspacePreview />
+          <SelectionPreviews />
           {items.length ? (
             <ItemList items={items} />
           ) : (

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { catalog, getItem, itemsInCategory } from "./catalog";
+import { catalog, getItem, groups, hotspots, itemsInCategory, itemsInGroup } from "./catalog";
 import {
   type Selection,
   emptySelection,
@@ -27,22 +27,44 @@ describe("catalog", () => {
       '24" Full HD Monitor': 12,
       '27" 4K Monitor': 20,
       Plants: 5,
+      "Desk Lamp": 6,
+      Headphones: 8,
+      Sofa: 35,
+      "Bean Bag": 12,
+      "Floor Plant": 7,
       "Coffee Station": 15,
-      "Sport Gear": 10,
-      Surfboard: 12,
-      Motorbike: 60,
       "Garage Space": 40,
+      Motorbike: 60,
+      Surfboard: 12,
+      "Sport Gear": 10,
     });
     expect(itemsInCategory("desk")).toHaveLength(3);
     expect(itemsInCategory("chair")).toHaveLength(4);
     expect(itemsInCategory("monitor")).toHaveLength(2);
-    expect(itemsInCategory("accessory")).toHaveLength(6);
+    expect(itemsInCategory("accessory")).toHaveLength(11);
+    expect(itemsInGroup("desk-accessory").map((i) => i.id)).toEqual(["plants", "desk-lamp", "headphones"]);
+    expect(itemsInGroup("lounge").map((i) => i.id)).toEqual(["sofa", "bean-bag", "floor-plant", "coffee-station"]);
+    expect(itemsInGroup("garage").map((i) => i.id)).toEqual(["garage-space", "motorbike", "surfboard", "sport-gear"]);
+  });
+
+  it("has one on-scene hotspot per group", () => {
+    expect(hotspots.map((h) => h.group).sort()).toEqual(groups.map((g) => g.group).sort());
+    for (const h of hotspots) {
+      expect(h.x).toBeGreaterThan(0);
+      expect(h.x).toBeLessThan(100);
+      expect(h.y).toBeGreaterThan(0);
+      expect(h.y).toBeLessThan(100);
+    }
   });
 
   it("gives every item its own image", () => {
     const images = catalog.map((i) => i.image);
     expect(new Set(images).size).toBe(catalog.length);
     images.forEach((src) => expect(src).toMatch(/^\/items\/.+\.svg$/));
+  });
+
+  it("places every item except the garage space in its scene", () => {
+    expect(catalog.filter((i) => !i.layer).map((i) => i.id)).toEqual(["garage-space"]);
   });
 });
 
@@ -103,10 +125,33 @@ describe("monitors", () => {
 
 describe("accessories", () => {
   it("toggles Plants off without affecting others", () => {
-    const s: Selection = { ...emptySelection, accessoryIds: ["plants", "surfboard"] };
+    const s: Selection = { ...emptySelection, accessoryIds: ["plants", "sofa"] };
     const next = reduce(s, { type: "toggleAccessory", id: "plants" });
-    expect(next.accessoryIds).toEqual(["surfboard"]);
-    expect(reduce(next, { type: "toggleAccessory", id: "plants" }).accessoryIds).toEqual(["surfboard", "plants"]);
+    expect(next.accessoryIds).toEqual(["sofa"]);
+    expect(reduce(next, { type: "toggleAccessory", id: "plants" }).accessoryIds).toEqual(["sofa", "plants"]);
+  });
+});
+
+describe("garage rule", () => {
+  it("adding gear adds the garage space once", () => {
+    let s = reduce(emptySelection, { type: "toggleAccessory", id: "motorbike" });
+    expect(s.accessoryIds).toEqual(["motorbike", "garage-space"]);
+    s = reduce(s, { type: "toggleAccessory", id: "surfboard" });
+    expect(s.accessoryIds).toEqual(["motorbike", "garage-space", "surfboard"]);
+  });
+
+  it("removing gear keeps the garage space", () => {
+    const s: Selection = { ...emptySelection, accessoryIds: ["motorbike", "garage-space"] };
+    expect(reduce(s, { type: "toggleAccessory", id: "motorbike" }).accessoryIds).toEqual(["garage-space"]);
+  });
+
+  it("removing the garage space removes all gear but nothing else", () => {
+    const s: Selection = { ...emptySelection, accessoryIds: ["plants", "motorbike", "garage-space", "sport-gear", "sofa"] };
+    expect(reduce(s, { type: "toggleAccessory", id: "garage-space" }).accessoryIds).toEqual(["plants", "sofa"]);
+  });
+
+  it("garage space alone is allowed", () => {
+    expect(reduce(emptySelection, { type: "toggleAccessory", id: "garage-space" }).accessoryIds).toEqual(["garage-space"]);
   });
 });
 
@@ -174,7 +219,7 @@ describe("parseStoredSelection (corrupt storage)", () => {
     expect(parseStoredSelection(raw)).toEqual({
       deskId: "desk-oak-standing",
       monitorIds: ["monitor-24-fhd", "monitor-27-4k", "monitor-24-fhd"],
-      accessoryIds: ["plants", "surfboard"],
+      accessoryIds: ["plants", "surfboard", "garage-space"],
     });
   });
 

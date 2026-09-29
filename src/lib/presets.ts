@@ -34,12 +34,12 @@ export const presets: readonly Preset[] = [
   {
     id: "standing-desk",
     name: "Standing Desk",
-    description: "Oak standing desk, a 4K screen and a coffee station",
+    description: "Oak standing desk, a 4K screen and a desk lamp",
     selection: {
       deskId: "desk-oak-standing",
       chairId: "chair-ergo-mesh",
       monitorIds: ["monitor-27-4k"],
-      accessoryIds: ["coffee-station", "plants"],
+      accessoryIds: ["desk-lamp", "plants"],
     },
   },
   {

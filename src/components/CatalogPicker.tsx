@@ -1,6 +1,20 @@
 "use client";
 
-import { type CatalogItem, type Category, MAX_MONITORS, categories, formatPrice, getItem, itemsInCategory } from "@/lib/catalog";
+import {
+  type CatalogItem,
+  type Group,
+  type Zone,
+  GARAGE_SPACE_ID,
+  MAX_MONITORS,
+  formatPrice,
+  getItem,
+  groupMeta,
+  groups,
+  isGarageGear,
+  itemsInCategory,
+  itemsInGroup,
+} from "@/lib/catalog";
+import { hasGarageSpace } from "@/lib/configurator";
 import { useConfigurator } from "./ConfiguratorProvider";
 
 function ItemVisual({ item }: { item: CatalogItem }) {
@@ -127,12 +141,20 @@ function Monitors() {
   );
 }
 
-function Accessories() {
+/** Toggle cards for an accessory group (desk accessories, lounge, garage). */
+function ToggleGroup({ group }: { group: Group }) {
   const { selection, dispatch } = useConfigurator();
+  const garageRented = hasGarageSpace(selection);
   return (
     <ul className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-2">
-      {itemsInCategory("accessory").map((item) => {
+      {itemsInGroup(group).map((item) => {
         const selected = selection.accessoryIds.includes(item.id);
+        const note =
+          item.id === GARAGE_SPACE_ID
+            ? "Required for garage gear"
+            : isGarageGear(item.id) && !garageRented
+              ? "Adds garage space"
+              : null;
         return (
           <li key={item.id} className="min-w-0">
             <button
@@ -143,6 +165,7 @@ function Accessories() {
             >
               <ItemVisual item={item} />
               <ItemText item={item} />
+              {note && <span className="text-xs text-stone-500">{note}</span>}
               {selected ? <SelectedBadge /> : <span className="mt-1 text-sm font-medium text-stone-900">+ Add</span>}
             </button>
           </li>
@@ -152,38 +175,40 @@ function Accessories() {
   );
 }
 
-function Section({ category }: { category: Category }) {
-  const meta = categories.find((c) => c.category === category)!;
+function Section({ group }: { group: Group }) {
+  const meta = groupMeta(group);
   return (
-    <section aria-labelledby={`section-${category}`} className="space-y-3">
+    <section aria-labelledby={`section-${group}`} className="space-y-3">
       <div className="flex items-baseline justify-between gap-2">
-        <h2 id={`section-${category}`} className="text-lg font-semibold text-stone-900">
+        <h2 id={`section-${group}`} tabIndex={-1} className="scroll-mt-2 text-lg font-semibold text-stone-900 outline-none">
           {meta.title}
         </h2>
         <span className="text-sm text-stone-500">{meta.rule}</span>
       </div>
-      {category === "desk" || category === "chair" ? (
-        <SingleChoice category={category} />
-      ) : category === "monitor" ? (
+      {group === "desk" || group === "chair" ? (
+        <SingleChoice category={group} />
+      ) : group === "monitor" ? (
         <Monitors />
       ) : (
-        <Accessories />
+        <ToggleGroup group={group} />
       )}
     </section>
   );
 }
 
-export function CatalogPicker() {
+/** Picker sections for the groups in one zone. */
+export function CatalogPicker({ zone }: { zone: Zone }) {
   const { hydrated } = useConfigurator();
+  const zoneGroups = groups.filter((g) => g.zone === zone);
   if (!hydrated) {
     // Neutral skeleton: no selected states until the saved selection is loaded.
     return (
       <div className="space-y-8" aria-busy="true">
-        {categories.map(({ category, title }) => (
-          <section key={category} className="space-y-3">
+        {zoneGroups.map(({ group, title }) => (
+          <section key={group} className="space-y-3">
             <h2 className="text-lg font-semibold text-stone-900">{title}</h2>
             <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-2">
-              {itemsInCategory(category).map((item) => (
+              {itemsInGroup(group).map((item) => (
                 <div key={item.id} className="aspect-[4/5] animate-pulse rounded-xl bg-stone-200" />
               ))}
             </div>
@@ -194,8 +219,8 @@ export function CatalogPicker() {
   }
   return (
     <div className="space-y-8">
-      {categories.map(({ category }) => (
-        <Section key={category} category={category} />
+      {zoneGroups.map(({ group }) => (
+        <Section key={group} group={group} />
       ))}
     </div>
   );

@@ -1,6 +1,6 @@
 # Design Your Workspace
 
-A visual rental configurator. The 2D layered preview of the workspace fills the screen; the options live in a drawer (a bottom sheet on phones, a side panel on desktop). Start from a preset (Dual Monitor, Triple Monitor, Standing Desk, Gaming) or pick a desk, a chair, up to three monitors and any accessories, watch the preview update as you go, then finish at a checkout summary with weekly and rental totals.
+A visual rental configurator. The 2D layered preview of the workspace fills the screen; the options live in a drawer (a bottom sheet on phones, a side panel on desktop). When the workspace is empty, a modal offers presets (Dual Monitor, Triple Monitor, Standing Desk, Gaming) and hides the drawer; the Presets button reopens it. Tabs switch between three scenes — Workspace (desk, chair, monitors, desk accessories), Lounge and Garage — and the drawer follows the active tab. Tap a + hotspot on the preview to swap or add products from that group (with the drawer open it scrolls to that section; otherwise a picker modal opens), or pick a desk, a chair, up to three monitors and any accessories, watch the preview update as you go, then finish at a checkout summary with weekly and rental totals.
 
 - All prices are weekly rental prices in USD.
 - The selection is saved in the browser (`localStorage`) and survives reloads.
@@ -45,7 +45,7 @@ You don't need any environment variables or paid add-ons. Images are served as p
 ## Project layout
 
 ```
-public/scene/room.svg        base scene (800×600, 4:3)
+public/scene/*.svg           zone scenes: room (workspace), lounge, garage (800×600, 4:3)
 public/items/*.svg           one image per catalog item
 src/lib/catalog.ts           catalog: items, prices, images, preview layer boxes
 src/lib/configurator.ts      selection reducer, totals, storage parsing (pure)
@@ -88,6 +88,7 @@ Everything lives in `src/lib/catalog.ts`:
 - To add an item, add an entry with a unique `id`, a `category` (`desk`, `chair`, `monitor` or `accessory`), an `image` and a `layer` box. Every item needs its own image.
 - Presets live in `src/lib/presets.ts`; each is a full selection (ids must exist in the catalog — a unit test checks this).
 - Selection rules are fixed by category: exactly one desk and one chair, 0–3 monitors (`MAX_MONITORS`), and each accessory at most once.
+- Accessories belong to a `group` (`desk-accessory`, `lounge`, `garage`); each group's `zone` decides which scene it appears in. Garage gear requires the Garage Space: adding gear adds it, removing it removes the gear.
 
 The unit test `catalog › matches catalog.md items and prices` pins the seed catalog. Update it when you change items or prices on purpose.
 
