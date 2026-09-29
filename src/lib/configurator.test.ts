@@ -4,10 +4,13 @@ import {
   type Selection,
   emptySelection,
   hasDeskAndChair,
+  isInSelection,
   lineItems,
   parseStoredSelection,
+  removeProduct,
   rentalTotal,
   selectionReducer as reduce,
+  tapProduct,
   weeklyTotal,
 } from "./configurator";
 
@@ -232,5 +235,52 @@ describe("parseStoredSelection (corrupt storage)", () => {
     };
     expect(parseStoredSelection(JSON.stringify(s))).toEqual(s);
     expect(getItem("motorbike")?.weeklyPrice).toBe(60);
+  });
+});
+
+describe("product taps (details trigger)", () => {
+  it("selecting a desk or chair opens details", () => {
+    expect(tapProduct(emptySelection, "desk-oak-standing")).toEqual({ action: { type: "selectDesk", id: "desk-oak-standing" }, openDetails: true });
+    expect(tapProduct(emptySelection, "chair-gaming")).toEqual({ action: { type: "selectChair", id: "chair-gaming" }, openDetails: true });
+  });
+
+  it("deselecting an accessory does not open details", () => {
+    const s: Selection = { ...emptySelection, accessoryIds: ["plants"] };
+    expect(tapProduct(s, "plants")).toEqual({ action: { type: "toggleAccessory", id: "plants" }, openDetails: false });
+    expect(isInSelection(reduce(s, tapProduct(s, "plants").action!), "plants")).toBe(false);
+  });
+
+  it("a monitor tap at the cap is a no-op", () => {
+    expect(tapProduct(withMonitors("monitor-24-fhd", "monitor-24-fhd", "monitor-27-4k"), "monitor-24-fhd")).toEqual({ action: null, openDetails: false });
+  });
+
+  it("garage gear adds itself and the garage space, and opens its details", () => {
+    const tap = tapProduct(emptySelection, "motorbike");
+    expect(tap.openDetails).toBe(true);
+    expect(reduce(emptySelection, tap.action!).accessoryIds).toEqual(["motorbike", "garage-space"]);
+  });
+
+  it("unknown ids do nothing", () => {
+    expect(tapProduct(emptySelection, "nope")).toEqual({ action: null, openDetails: false });
+  });
+});
+
+describe("removeProduct (details sheet)", () => {
+  it("accessory removal toggles it off; garage space takes its gear with it", () => {
+    const s: Selection = { ...emptySelection, accessoryIds: ["motorbike", "garage-space", "plants"] };
+    expect(reduce(s, removeProduct(s, "garage-space")!).accessoryIds).toEqual(["plants"]);
+    expect(reduce(s, removeProduct(s, "plants")!).accessoryIds).toEqual(["motorbike", "garage-space"]);
+  });
+
+  it("monitor removal drops the last of that model", () => {
+    const s = withMonitors("monitor-24-fhd", "monitor-27-4k", "monitor-24-fhd");
+    expect(reduce(s, removeProduct(s, "monitor-24-fhd")!).monitorIds).toEqual(["monitor-24-fhd", "monitor-27-4k"]);
+  });
+
+  it("desks, chairs and unselected items have no remove", () => {
+    const s: Selection = { ...emptySelection, deskId: "desk-oak-standing", chairId: "chair-gaming" };
+    expect(removeProduct(s, "desk-oak-standing")).toBeNull();
+    expect(removeProduct(s, "chair-gaming")).toBeNull();
+    expect(removeProduct(s, "sofa")).toBeNull();
   });
 });

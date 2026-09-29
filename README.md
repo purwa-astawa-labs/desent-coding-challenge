@@ -2,6 +2,8 @@
 
 A visual rental configurator. The 2D layered preview of the workspace fills the screen; the options live in a drawer (a bottom sheet on phones, a side panel on desktop). When the workspace is empty, a modal offers presets (Dual Monitor, Triple Monitor, Standing Desk, Gaming) and hides the drawer; the Presets button reopens it. Tabs switch between three scenes — Workspace (desk, chair, monitors, desk accessories), Lounge and Garage — and the drawer follows the active tab. Tap a + hotspot on the preview to swap or add products from that group (with the drawer open it scrolls to that section; otherwise a picker modal opens), or pick a desk, a chair, up to three monitors and any accessories, watch the preview update as you go, then finish at a checkout summary with weekly and rental totals.
 
+Selecting a product (in the drawer or the picker modal) opens its details sheet: a gallery (the product image, an "In your space" view of its scene with your current selection, and any extra photos), the weekly price, a description and a specs list. Close it with Done, ×, Escape or a click outside; the selection is kept. Accessories and monitors can also be removed from the sheet. Tapping a selected accessory to remove it doesn't open the sheet.
+
 - All prices are weekly rental prices in USD.
 - The selection is saved in the browser (`localStorage`) and survives reloads.
 - Checkout only validates and confirms on screen. No payment is taken and nothing is sent anywhere.
@@ -32,6 +34,8 @@ npm test           # Vitest in watch mode (use `npx vitest run` for a single run
 Selection and pricing rules are pure functions with unit tests:
 
 - `src/lib/configurator.test.ts`: one desk and one chair (swaps replace), 0–3 monitors (repeatable, removal keeps order), accessory toggles, weekly and rental totals, and recovery from corrupt saved data.
+- `src/lib/presets.test.ts`: presets only reference catalog items and replace the selection.
+- `src/lib/productDetails.test.ts`: every catalog item has a description and at least 3 specs, no details for unknown ids, and extra image paths start with `/`.
 - `src/lib/checkout.test.ts`: checkout validation (name, email, start date not in the past using the local date, whole number of weeks ≥ 1).
 
 ## Deploy to Vercel
@@ -50,8 +54,9 @@ public/items/*.svg           one image per catalog item
 src/lib/catalog.ts           catalog: items, prices, images, preview layer boxes
 src/lib/configurator.ts      selection reducer, totals, storage parsing (pure)
 src/lib/presets.ts           ready-made setups offered when the workspace is empty
+src/lib/productDetails.ts    product descriptions, specs and extra gallery photos (sample content)
 src/lib/checkout.ts          checkout validation (pure)
-src/components/              provider (state + localStorage), full-screen configurator + drawer, preview, presets, picker, summary bar
+src/components/              provider (state + localStorage), full-screen configurator + drawer, preview, presets, picker, product details sheet, summary bar
 src/app/page.tsx             configurator page
 src/app/checkout/page.tsx    checkout page
 ```
@@ -79,6 +84,16 @@ Each item's image path is the `image` field of its entry in `src/lib/catalog.ts`
 | Scene (`public/scene/room.svg`) | 800×600 |
 
 Use transparent backgrounds so the layers show through one another. If an image has a different shape, adjust its `layer` box (`left`, `top`, `width`, `z`) in `catalog.ts`. `z` sets the stacking order, and higher values draw in front. Monitors use the three `monitorSlots` boxes instead of their own `layer`.
+
+## Product details, specs and photos
+
+Descriptions and specs live in `src/lib/productDetails.ts`, keyed by catalog `id`. **They are sample values** — replace them with your real product data. Each entry has:
+
+- `description`: one or two sentences.
+- `specs`: a list of `{ label, value }` rows (for example Dimensions, Material, Colour, key features).
+- `images`: extra gallery photos, empty for now. To add photos, put the files under `public/` (for example `public/photos/desk-oak-standing-1.jpg`) and list their paths, starting with `/`: `images: ["/photos/desk-oak-standing-1.jpg"]`. They appear in the gallery after the main image and the "In your space" view. Any aspect ratio works; photos are fitted inside the frame.
+
+When you add a catalog item, add its details too: the unit test fails for any item without a description and at least 3 specs.
 
 ## Editing the catalog and prices
 

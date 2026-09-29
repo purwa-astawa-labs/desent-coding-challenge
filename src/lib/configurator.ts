@@ -127,3 +127,44 @@ export function parseStoredSelection(raw: string | null | undefined): Selection 
 }
 
 export const STORAGE_KEY = "design-your-workspace:selection:v1";
+
+/** True when the item is part of the selection (any slot). */
+export function isInSelection(selection: Selection, id: string): boolean {
+  return (
+    selection.deskId === id ||
+    selection.chairId === id ||
+    selection.monitorIds.includes(id) ||
+    selection.accessoryIds.includes(id)
+  );
+}
+
+/**
+ * What a tap on a product card does: the action to dispatch (null for a no-op) and whether it
+ * is a selecting tap that should open the product's details. Deselecting an accessory or
+ * tapping a monitor at the cap never opens details.
+ */
+export function tapProduct(selection: Selection, id: string): { action: SelectionAction | null; openDetails: boolean } {
+  const item = getItem(id);
+  if (!item) return { action: null, openDetails: false };
+  switch (item.category) {
+    case "desk":
+      return { action: { type: "selectDesk", id }, openDetails: true };
+    case "chair":
+      return { action: { type: "selectChair", id }, openDetails: true };
+    case "monitor":
+      return selection.monitorIds.length >= MAX_MONITORS
+        ? { action: null, openDetails: false }
+        : { action: { type: "addMonitor", id }, openDetails: true };
+    default:
+      return { action: { type: "toggleAccessory", id }, openDetails: !selection.accessoryIds.includes(id) };
+  }
+}
+
+/** The "Remove" action offered in the details sheet: accessories toggle off, monitors drop the last of that model; desks and chairs have none. */
+export function removeProduct(selection: Selection, id: string): SelectionAction | null {
+  const item = getItem(id);
+  if (!item || !isInSelection(selection, id)) return null;
+  if (item.category === "accessory") return { type: "toggleAccessory", id };
+  if (item.category === "monitor") return { type: "removeMonitor", index: selection.monitorIds.lastIndexOf(id) };
+  return null;
+}

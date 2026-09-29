@@ -14,8 +14,20 @@ import {
   itemsInCategory,
   itemsInGroup,
 } from "@/lib/catalog";
-import { hasGarageSpace } from "@/lib/configurator";
+import { hasGarageSpace, tapProduct } from "@/lib/configurator";
 import { useConfigurator } from "./ConfiguratorProvider";
+import { useProductDetails } from "./ProductDetails";
+
+/** Card tap: apply the selection rule, then open details for a selecting tap. */
+function useProductTap() {
+  const { selection, dispatch } = useConfigurator();
+  const { openDetails } = useProductDetails();
+  return (id: string) => {
+    const result = tapProduct(selection, id);
+    if (result.action) dispatch(result.action);
+    if (result.openDetails) openDetails(id);
+  };
+}
 
 function ItemVisual({ item }: { item: CatalogItem }) {
   return (
@@ -51,7 +63,8 @@ function SelectedBadge() {
 }
 
 function SingleChoice({ category }: { category: "desk" | "chair" }) {
-  const { selection, dispatch } = useConfigurator();
+  const { selection } = useConfigurator();
+  const tap = useProductTap();
   const current = category === "desk" ? selection.deskId : selection.chairId;
   return (
     <ul className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-2">
@@ -63,7 +76,7 @@ function SingleChoice({ category }: { category: "desk" | "chair" }) {
               type="button"
               aria-pressed={selected}
               className={cardClass(selected)}
-              onClick={() => dispatch({ type: category === "desk" ? "selectDesk" : "selectChair", id: item.id })}
+              onClick={() => tap(item.id)}
             >
               <ItemVisual item={item} />
               <ItemText item={item} />
@@ -78,6 +91,7 @@ function SingleChoice({ category }: { category: "desk" | "chair" }) {
 
 function Monitors() {
   const { selection, dispatch } = useConfigurator();
+  const tap = useProductTap();
   const full = selection.monitorIds.length >= MAX_MONITORS;
   return (
     <div className="space-y-3">
@@ -95,7 +109,7 @@ function Monitors() {
                     : `Add ${item.name}${count > 0 ? `, ${count} added` : ""}`
                 }
                 className={cardClass(count > 0, full)}
-                onClick={() => dispatch({ type: "addMonitor", id: item.id })}
+                onClick={() => tap(item.id)}
               >
                 <ItemVisual item={item} />
                 <ItemText item={item} />
@@ -143,7 +157,8 @@ function Monitors() {
 
 /** Toggle cards for an accessory group (desk accessories, lounge, garage). */
 function ToggleGroup({ group }: { group: Group }) {
-  const { selection, dispatch } = useConfigurator();
+  const { selection } = useConfigurator();
+  const tap = useProductTap();
   const garageRented = hasGarageSpace(selection);
   return (
     <ul className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-2">
@@ -161,7 +176,7 @@ function ToggleGroup({ group }: { group: Group }) {
               type="button"
               aria-pressed={selected}
               className={cardClass(selected)}
-              onClick={() => dispatch({ type: "toggleAccessory", id: item.id })}
+              onClick={() => tap(item.id)}
             >
               <ItemVisual item={item} />
               <ItemText item={item} />

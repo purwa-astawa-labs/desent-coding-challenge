@@ -2,8 +2,9 @@
 
 import { useEffect, useRef } from "react";
 import { type Group, MAX_MONITORS, formatPrice, groupMeta, isGarageGear, itemsInGroup } from "@/lib/catalog";
-import { hasGarageSpace } from "@/lib/configurator";
+import { hasGarageSpace, tapProduct } from "@/lib/configurator";
 import { useConfigurator } from "./ConfiguratorProvider";
+import { useProductDetails } from "./ProductDetails";
 
 /**
  * Centered modal of one group's products, opened from a preview hotspot. Uses a native
@@ -11,6 +12,7 @@ import { useConfigurator } from "./ConfiguratorProvider";
  */
 export function QuickPicker({ group, onClose }: { group: Group; onClose: () => void }) {
   const { selection, dispatch } = useConfigurator();
+  const { openDetails } = useProductDetails();
   const ref = useRef<HTMLDialogElement>(null);
   const meta = groupMeta(group);
   const monitorsFull = selection.monitorIds.length >= MAX_MONITORS;
@@ -30,11 +32,11 @@ export function QuickPicker({ group, onClose }: { group: Group; onClose: () => v
           ? selection.monitorIds.includes(id)
           : selection.accessoryIds.includes(id);
 
+  // Selecting taps open the product's details above this modal; a deselect or a no-op at the monitor cap does not.
   const choose = (id: string) => {
-    if (group === "desk") dispatch({ type: "selectDesk", id });
-    else if (group === "chair") dispatch({ type: "selectChair", id });
-    else if (group === "monitor") dispatch({ type: "addMonitor", id });
-    else dispatch({ type: "toggleAccessory", id });
+    const tap = tapProduct(selection, id);
+    if (tap.action) dispatch(tap.action);
+    if (tap.openDetails) openDetails(id);
   };
 
   return (
