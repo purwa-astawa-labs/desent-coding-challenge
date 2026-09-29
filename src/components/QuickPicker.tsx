@@ -1,10 +1,11 @@
 "use client";
 
-import { useEffect, useRef } from "react";
-import { type Group, MAX_MONITORS, formatPrice, groupMeta, isGarageGear, itemsInGroup } from "@/lib/catalog";
+import { type Group, MAX_MONITORS, groupMeta, isGarageGear, itemsInGroup } from "@/lib/catalog";
 import { hasGarageSpace, tapProduct } from "@/lib/configurator";
+import { ItemText, ItemVisual, cardClass } from "./CatalogPicker";
 import { useConfigurator } from "./ConfiguratorProvider";
 import { useProductDetails } from "./ProductDetails";
+import { dialogClass, useModalDialog } from "./useModalDialog";
 
 /**
  * Centered modal of one group's products, opened from a preview hotspot. Uses a native
@@ -13,15 +14,9 @@ import { useProductDetails } from "./ProductDetails";
 export function QuickPicker({ group, onClose }: { group: Group; onClose: () => void }) {
   const { selection, dispatch } = useConfigurator();
   const { openDetails } = useProductDetails();
-  const ref = useRef<HTMLDialogElement>(null);
+  const { dialogProps, requestClose } = useModalDialog(onClose);
   const meta = groupMeta(group);
   const monitorsFull = selection.monitorIds.length >= MAX_MONITORS;
-
-  useEffect(() => {
-    const dialog = ref.current;
-    if (dialog && !dialog.open) dialog.showModal();
-    return () => dialog?.close();
-  }, []);
 
   const isSelected = (id: string) =>
     group === "desk"
@@ -41,22 +36,16 @@ export function QuickPicker({ group, onClose }: { group: Group; onClose: () => v
 
   return (
     <dialog
-      ref={ref}
+      {...dialogProps}
       aria-labelledby="quick-pick-title"
-      onCancel={(e) => {
-        e.preventDefault();
-        onClose();
-      }}
-      // A click on the dialog element itself (not its content) is a click on the backdrop.
-      onClick={(e) => e.target === e.currentTarget && onClose()}
-      className="m-auto max-h-[calc(100dvh-2rem)] w-[min(40rem,calc(100vw-2rem))] overflow-hidden rounded-2xl bg-white p-0 text-stone-900 shadow-2xl backdrop:bg-stone-900/60"
+      className={`${dialogClass} m-auto max-h-[calc(100dvh-2rem)] w-[min(40rem,calc(100vw-2rem))] rounded-sheet`}
     >
       <div className="flex max-h-[calc(100dvh-2rem)] flex-col">
         <header className="flex shrink-0 items-center justify-between gap-2 px-5 pb-3 pt-4">
-          <h2 id="quick-pick-title" className="text-lg font-semibold">
-            {meta.title} <span className="text-sm font-normal text-stone-500">· {meta.rule}</span>
+          <h2 id="quick-pick-title" className="font-display text-xl font-semibold tracking-tight">
+            {meta.title} <span className="font-sans text-sm font-normal text-muted">· {meta.rule}</span>
             {group === "monitor" && (
-              <span className="text-sm font-normal text-stone-500">
+              <span className="font-sans text-sm font-normal text-muted">
                 {" "}
                 ({selection.monitorIds.length}/{MAX_MONITORS})
               </span>
@@ -67,16 +56,16 @@ export function QuickPicker({ group, onClose }: { group: Group; onClose: () => v
               <button
                 type="button"
                 onClick={() => dispatch({ type: "removeMonitor", index: selection.monitorIds.length - 1 })}
-                className="rounded-lg px-2 py-1 text-sm font-medium text-red-700 hover:bg-red-50"
+                className="rounded-control px-2 py-1 text-sm font-medium text-danger transition hover:bg-danger/10 focus-visible:outline-2 focus-visible:outline-danger motion-reduce:transition-none"
               >
                 Remove one
               </button>
             )}
             <button
               type="button"
-              onClick={onClose}
+              onClick={() => requestClose()}
               aria-label="Close"
-              className="rounded-lg px-2 py-1 text-xl leading-none text-stone-500 hover:bg-stone-100 hover:text-stone-900"
+              className="rounded-control px-2 py-1 text-xl leading-none text-muted transition hover:bg-surface hover:text-ink focus-visible:outline-2 focus-visible:outline-accent motion-reduce:transition-none"
             >
               ×
             </button>
@@ -94,21 +83,12 @@ export function QuickPicker({ group, onClose }: { group: Group; onClose: () => v
                   aria-pressed={group === "monitor" ? undefined : selected}
                   disabled={disabled}
                   onClick={() => choose(item.id)}
-                  className={[
-                    "flex w-full flex-col rounded-xl border bg-white p-2 text-left transition",
-                    "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-stone-900",
-                    selected ? "border-stone-900 ring-2 ring-stone-900" : "border-stone-200 hover:border-stone-400",
-                    disabled ? "cursor-not-allowed opacity-50" : "",
-                  ].join(" ")}
+                  className={cardClass(selected, disabled)}
                 >
-                  <span className="relative block aspect-[4/3] w-full overflow-hidden rounded-lg bg-stone-100">
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img src={item.image} alt="" className="absolute inset-0 h-full w-full object-contain p-2" draggable={false} />
-                  </span>
-                  <span className="mt-2 block text-sm font-medium leading-snug">{item.name}</span>
-                  <span className="block text-sm text-stone-600">{formatPrice(item.weeklyPrice)}/week</span>
+                  <ItemVisual item={item} selected={selected} />
+                  <ItemText item={item} />
                   {isGarageGear(item.id) && !hasGarageSpace(selection) && (
-                    <span className="text-xs text-stone-500">Adds garage space</span>
+                    <span className="text-xs text-muted">Adds garage space</span>
                   )}
                 </button>
               </li>

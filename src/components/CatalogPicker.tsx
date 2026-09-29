@@ -29,37 +29,64 @@ function useProductTap() {
   };
 }
 
-function ItemVisual({ item }: { item: CatalogItem }) {
+function CheckIcon() {
   return (
-    <div className="relative aspect-[4/3] w-full overflow-hidden rounded-lg bg-stone-100">
-      {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img src={item.image} alt="" className="absolute inset-0 h-full w-full object-contain p-2" draggable={false} />
-    </div>
+    <svg aria-hidden="true" viewBox="0 0 20 20" className="h-3.5 w-3.5">
+      <path d="M5 10.5l3.2 3L15 6.5" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
   );
 }
 
-function ItemText({ item }: { item: CatalogItem }) {
+/** Product image well; a selected product gets an accent check badge in its corner. */
+export function ItemVisual({ item, selected = false }: { item: CatalogItem; selected?: boolean }) {
   return (
-    <span className="mt-2 block text-left">
-      <span className="block text-sm font-medium leading-snug text-stone-900">{item.name}</span>
-      <span className="block text-sm text-stone-600">{formatPrice(item.weeklyPrice)}/week</span>
+    <span className="relative block aspect-[4/3] w-full overflow-hidden rounded-control bg-surface">
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img
+        src={item.image}
+        alt=""
+        className="absolute inset-0 h-full w-full object-contain p-2 transition duration-300 ease-out group-enabled:group-hover:scale-103 motion-reduce:transition-none motion-reduce:group-hover:scale-100"
+        draggable={false}
+      />
+      {selected && (
+        <span className="absolute right-1.5 top-1.5 flex h-6 w-6 items-center justify-center rounded-full bg-accent text-accent-contrast shadow-card ring-2 ring-raised transition duration-200 ease-out starting:scale-50 starting:opacity-0 motion-reduce:transition-none">
+          <CheckIcon />
+          <span className="sr-only">Selected</span>
+        </span>
+      )}
     </span>
   );
 }
 
-function cardClass(selected: boolean, disabled = false) {
+/** Name and weekly price under a product image. */
+export function ItemText({ item }: { item: CatalogItem }) {
+  return (
+    <span className="mt-2 block text-left">
+      <span className="block text-sm font-medium leading-snug text-ink">{item.name}</span>
+      <span className="block text-sm tabular-nums">
+        <span className="font-semibold text-ink">{formatPrice(item.weeklyPrice)}</span>
+        <span className="text-muted">/week</span>
+      </span>
+    </span>
+  );
+}
+
+/** Product card button: hover lift, accent ring when selected, dimmed when disabled. */
+export function cardClass(selected: boolean, disabled = false) {
   return [
-    "flex w-full min-w-0 flex-col rounded-xl border bg-white p-2 text-left transition",
-    "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-stone-900",
-    selected ? "border-stone-900 ring-2 ring-stone-900" : "border-stone-200 hover:border-stone-400",
+    "group flex w-full min-w-0 flex-col rounded-card border bg-raised p-2 text-left shadow-card",
+    "transition duration-200 ease-out motion-reduce:transition-none",
+    "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent",
+    selected
+      ? "border-accent ring-2 ring-accent"
+      : "border-line enabled:hover:-translate-y-0.5 enabled:hover:border-ink/25 enabled:hover:shadow-float motion-reduce:enabled:hover:translate-y-0",
     disabled ? "cursor-not-allowed opacity-50" : "",
   ].join(" ");
 }
 
-function SelectedBadge() {
-  return (
-    <span className="mt-1 self-start rounded-full bg-stone-900 px-2 py-0.5 text-xs font-medium text-white">Selected</span>
-  );
+/** The "+ Add" affordance under an unselected card. */
+function AddHint() {
+  return <span className="mt-1.5 self-start text-sm font-semibold text-accent">+ Add</span>;
 }
 
 function SingleChoice({ category }: { category: "desk" | "chair" }) {
@@ -78,9 +105,8 @@ function SingleChoice({ category }: { category: "desk" | "chair" }) {
               className={cardClass(selected)}
               onClick={() => tap(item.id)}
             >
-              <ItemVisual item={item} />
+              <ItemVisual item={item} selected={selected} />
               <ItemText item={item} />
-              {selected && <SelectedBadge />}
             </button>
           </li>
         );
@@ -111,18 +137,18 @@ function Monitors() {
                 className={cardClass(count > 0, full)}
                 onClick={() => tap(item.id)}
               >
-                <ItemVisual item={item} />
+                <ItemVisual item={item} selected={count > 0} />
                 <ItemText item={item} />
-                <span className="mt-1 text-sm font-medium text-stone-900">
+                <span className={`mt-1.5 self-start text-sm font-semibold ${full ? "text-muted" : "text-accent"}`}>
                   {full ? "Max 3 monitors" : "+ Add"}
-                  {count > 0 && <span className="ml-1 text-stone-500">({count} added)</span>}
+                  {count > 0 && <span className="ml-1 font-normal text-muted">({count} added)</span>}
                 </span>
               </button>
             </li>
           );
         })}
       </ul>
-      <p className="text-sm text-stone-600" aria-live="polite">
+      <p className="text-sm text-muted" aria-live="polite">
         {selection.monitorIds.length} of {MAX_MONITORS} monitors
       </p>
       {selection.monitorIds.length > 0 && (
@@ -133,14 +159,14 @@ function Monitors() {
             return (
               <li
                 key={`${i}-${id}`}
-                className="flex items-center justify-between gap-2 rounded-lg border border-stone-200 bg-white px-3 py-2 text-sm"
+                className="flex items-center justify-between gap-2 rounded-control border border-line bg-raised px-3 py-2 text-sm"
               >
                 <span className="min-w-0 truncate">
-                  <span className="text-stone-500">Slot {i + 1}:</span> {item.name}
+                  <span className="text-muted">Slot {i + 1}:</span> {item.name}
                 </span>
                 <button
                   type="button"
-                  className="shrink-0 rounded-md px-2 py-1 font-medium text-red-700 hover:bg-red-50 focus-visible:outline-2 focus-visible:outline-red-700"
+                  className="shrink-0 rounded-control px-2 py-1 font-medium text-danger transition hover:bg-danger/10 focus-visible:outline-2 focus-visible:outline-danger motion-reduce:transition-none"
                   aria-label={`Remove ${item.name} from slot ${i + 1}`}
                   onClick={() => dispatch({ type: "removeMonitor", index: i })}
                 >
@@ -178,10 +204,10 @@ function ToggleGroup({ group }: { group: Group }) {
               className={cardClass(selected)}
               onClick={() => tap(item.id)}
             >
-              <ItemVisual item={item} />
+              <ItemVisual item={item} selected={selected} />
               <ItemText item={item} />
-              {note && <span className="text-xs text-stone-500">{note}</span>}
-              {selected ? <SelectedBadge /> : <span className="mt-1 text-sm font-medium text-stone-900">+ Add</span>}
+              {note && <span className="text-xs text-muted">{note}</span>}
+              {!selected && <AddHint />}
             </button>
           </li>
         );
@@ -195,10 +221,10 @@ function Section({ group }: { group: Group }) {
   return (
     <section aria-labelledby={`section-${group}`} className="space-y-3">
       <div className="flex items-baseline justify-between gap-2">
-        <h2 id={`section-${group}`} tabIndex={-1} className="scroll-mt-2 text-lg font-semibold text-stone-900 outline-none">
+        <h2 id={`section-${group}`} tabIndex={-1} className="scroll-mt-2 font-display text-lg font-semibold tracking-tight text-ink outline-none">
           {meta.title}
         </h2>
-        <span className="text-sm text-stone-500">{meta.rule}</span>
+        <span className="text-sm text-muted">{meta.rule}</span>
       </div>
       {group === "desk" || group === "chair" ? (
         <SingleChoice category={group} />
@@ -221,10 +247,10 @@ export function CatalogPicker({ zone }: { zone: Zone }) {
       <div className="space-y-8" aria-busy="true">
         {zoneGroups.map(({ group, title }) => (
           <section key={group} className="space-y-3">
-            <h2 className="text-lg font-semibold text-stone-900">{title}</h2>
+            <h2 className="font-display text-lg font-semibold tracking-tight text-ink">{title}</h2>
             <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-2">
               {itemsInGroup(group).map((item) => (
-                <div key={item.id} className="aspect-[4/5] animate-pulse rounded-xl bg-stone-200" />
+                <div key={item.id} className="aspect-[4/5] rounded-card bg-line motion-safe:animate-pulse" />
               ))}
             </div>
           </section>

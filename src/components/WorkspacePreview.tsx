@@ -1,9 +1,7 @@
 "use client";
 
 import {
-  type CatalogItem,
   type Group,
-  type LayerBox,
   type Zone,
   GARAGE_SPACE_ID,
   SCENE_ASPECT_RATIO,
@@ -11,33 +9,14 @@ import {
   getItem,
   groupMeta,
   hotspots,
-  monitorSlots,
   zoneOf,
   zones,
 } from "@/lib/catalog";
 import { type Selection, hasGarageSpace, lineItems } from "@/lib/configurator";
+import { MOTION_OK, gsap, useGSAP } from "@/lib/motion";
+import { LAYER_IN_DURATION, layerStaggerAmount, layersFor } from "@/lib/scene";
+import { useRef } from "react";
 import { useConfigurator } from "./ConfiguratorProvider";
-
-interface Layer {
-  key: string;
-  item: CatalogItem;
-  box: LayerBox;
-}
-
-function layersFor(selection: Selection, zone: Zone): Layer[] {
-  const layers: Layer[] = [];
-  const add = (key: string, id: string | undefined, box?: LayerBox) => {
-    const item = id ? getItem(id) : undefined;
-    const layer = box ?? item?.layer;
-    if (item && layer && zoneOf(item) === zone) layers.push({ key, item, box: layer });
-  };
-  add("desk", selection.deskId);
-  add("chair", selection.chairId);
-  // Monitors: slot box by index, model only decides the image.
-  selection.monitorIds.forEach((id, i) => add(`monitor-${i}`, id, monitorSlots[i]));
-  selection.accessoryIds.forEach((id) => add(`accessory-${id}`, id));
-  return layers.sort((a, b) => a.box.z - b.box.z);
-}
 
 /** Names of the selected items that belong to a zone (the garage space counts for the garage). */
 export function zoneItemNames(selection: Selection, zone: Zone): string[] {
@@ -60,6 +39,8 @@ export function SceneLayers({ selection, zone = "workspace" }: { selection: Sele
           src={item.image}
           alt=""
           draggable={false}
+          // Marks a freshly mounted layer; WorkspacePreview animates it in once and clears the mark.
+          data-new=""
           className="absolute h-auto select-none"
           style={{ left: `${box.left}%`, top: `${box.top}%`, width: `${box.width}%`, zIndex: box.z }}
         />
@@ -92,24 +73,26 @@ function Hotspots({
               aria-label={`Change ${title.toLowerCase()}`}
               aria-expanded={isActive}
               onClick={() => onSelect(group)}
-              className="group absolute z-[60] flex h-11 w-11 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-stone-900"
+              className="group absolute z-[60] flex h-11 w-11 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
               style={{ left: `${x}%`, top: `${y}%` }}
             >
               {!isActive && (
-                <span aria-hidden="true" className="absolute h-6 w-6 animate-ping rounded-full bg-white/70 motion-reduce:hidden" />
+                <span aria-hidden="true" className="absolute h-5 w-5 rounded-full bg-raised/60 motion-safe:animate-ping" />
               )}
               <span
                 aria-hidden="true"
                 className={[
-                  "relative flex h-6 w-6 items-center justify-center rounded-full text-sm font-bold shadow-md ring-2 transition",
-                  isActive ? "bg-stone-900 text-white ring-white" : "bg-white text-stone-900 ring-stone-900/80 group-hover:scale-110",
+                  "relative flex h-6 w-6 items-center justify-center rounded-full text-sm font-bold shadow-float ring-2 transition duration-200 ease-out motion-reduce:transition-none",
+                  isActive
+                    ? "bg-accent text-accent-contrast ring-raised"
+                    : "bg-raised text-ink ring-ink/70 group-hover:scale-110 motion-reduce:group-hover:scale-100",
                 ].join(" ")}
               >
                 +
               </span>
               <span
                 aria-hidden="true"
-                className="pointer-events-none absolute top-full mt-0.5 whitespace-nowrap rounded-md bg-stone-900/85 px-1.5 py-0.5 text-[11px] font-medium text-white opacity-0 transition group-hover:opacity-100 group-focus-visible:opacity-100"
+                className="pointer-events-none absolute top-full mt-0.5 whitespace-nowrap rounded-control bg-ink/85 px-1.5 py-0.5 text-[11px] font-medium text-raised opacity-0 transition group-hover:opacity-100 group-focus-visible:opacity-100 motion-reduce:transition-none"
               >
                 {title}
               </span>
@@ -125,15 +108,15 @@ function GarageLocked({ interactive }: { interactive: boolean }) {
   const { dispatch } = useConfigurator();
   const price = getItem(GARAGE_SPACE_ID)!.weeklyPrice;
   return (
-    <div className="absolute inset-0 z-[70] flex items-center justify-center bg-stone-900/45 p-4">
-      <div className="max-w-xs rounded-2xl bg-white p-4 text-center shadow-xl">
-        <p className="font-semibold text-stone-900">Garage space not rented</p>
-        <p className="mt-1 text-sm text-stone-600">Rent it to store a motorbike, surfboard or sport gear.</p>
+    <div className="absolute inset-0 z-[70] flex items-center justify-center bg-ink/45 p-4">
+      <div className="max-w-xs rounded-card bg-raised p-4 text-center shadow-float">
+        <p className="font-display font-semibold text-ink">Garage space not rented</p>
+        <p className="mt-1 text-sm text-muted">Rent it to store a motorbike, surfboard or sport gear.</p>
         {interactive && (
           <button
             type="button"
             onClick={() => dispatch({ type: "toggleAccessory", id: GARAGE_SPACE_ID })}
-            className="mt-3 w-full rounded-xl bg-stone-900 px-4 py-2 text-sm font-semibold text-white hover:bg-stone-700"
+            className="mt-3 w-full rounded-control bg-accent px-4 py-2 text-sm font-semibold text-accent-contrast transition hover:bg-accent/90 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent motion-reduce:transition-none"
           >
             Rent garage space · {formatPrice(price)}/week
           </button>
@@ -156,6 +139,33 @@ export function WorkspacePreview({
   const names = zoneItemNames(selection, zone);
   const zoneTitle = zones.find((z) => z.zone === zone)!.title;
   const garageLocked = zone === "garage" && !hasGarageSpace(selection);
+  const previewRef = useRef<HTMLDivElement>(null);
+  // Changes whenever a layer mounts or unmounts (swap, add, remove, preset, zone switch).
+  const layerKeys = hydrated ? layersFor(selection, zone).map((l) => l.key).join("|") : "";
+
+  // Newly mounted layers fade and settle in; several at once (a preset) enter with a short stagger.
+  useGSAP(
+    () => {
+      const fresh = gsap.utils.toArray<HTMLElement>("[data-new]", previewRef.current);
+      if (!fresh.length) return;
+      fresh.forEach((el) => el.removeAttribute("data-new"));
+      const mm = gsap.matchMedia();
+      mm.add(MOTION_OK, () => {
+        gsap.from(fresh, {
+          opacity: 0,
+          y: 6,
+          scale: 0.97,
+          transformOrigin: "50% 100%",
+          duration: LAYER_IN_DURATION,
+          ease: "power2.out",
+          // Whole stagger (incl. the last layer's own 240 ms) stays within 500 ms.
+          stagger: { amount: layerStaggerAmount(fresh.length) },
+        });
+      });
+    },
+    { scope: previewRef, dependencies: [layerKeys], revertOnUpdate: true },
+  );
+
   const label = !hydrated
     ? `${zoneTitle} preview loading`
     : names.length
@@ -164,7 +174,8 @@ export function WorkspacePreview({
 
   return (
     <div
-      className="relative w-full overflow-hidden rounded-2xl border border-stone-200 bg-stone-100 shadow-sm"
+      ref={previewRef}
+      className="relative w-full overflow-hidden rounded-card border border-line bg-raised shadow-float"
       style={{ aspectRatio: SCENE_ASPECT_RATIO }}
     >
       <div role="img" aria-label={label} className="absolute inset-0">
@@ -172,13 +183,13 @@ export function WorkspacePreview({
           <>
             <SceneLayers selection={selection} zone={zone} />
             {names.length === 0 && !garageLocked && (
-              <p className="absolute inset-x-0 bottom-3 text-center text-sm text-stone-500">
+              <p className="absolute inset-x-0 bottom-3 text-center text-sm text-muted">
                 {onHotspot ? "Tap a + to add items" : "Nothing here yet"}
               </p>
             )}
           </>
         ) : (
-          <div className="absolute inset-0 animate-pulse bg-stone-200" />
+          <div className="absolute inset-0 bg-line motion-safe:animate-pulse" />
         )}
       </div>
       {hydrated && garageLocked && <GarageLocked interactive={Boolean(onHotspot)} />}
@@ -197,7 +208,7 @@ export function SelectionPreviews() {
     <div className="space-y-3">
       {shown.map(({ zone, title }) => (
         <figure key={zone} className="space-y-1">
-          {shown.length > 1 && <figcaption className="text-sm font-medium text-stone-600">{title}</figcaption>}
+          {shown.length > 1 && <figcaption className="text-sm font-medium text-muted">{title}</figcaption>}
           <WorkspacePreview zone={zone} />
         </figure>
       ))}

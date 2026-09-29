@@ -1,10 +1,11 @@
 "use client";
 
-import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
+import { createContext, useCallback, useContext, useMemo, useState, type ReactNode } from "react";
 import { type CatalogItem, SCENE_ASPECT_RATIO, formatPrice, getItem, zoneOf, zones } from "@/lib/catalog";
 import { type Selection, isInSelection, removeProduct } from "@/lib/configurator";
 import { type GallerySlide, gallerySlides, getDetails } from "@/lib/productDetails";
 import { useConfigurator } from "./ConfiguratorProvider";
+import { dialogClass, useModalDialog } from "./useModalDialog";
 import { SceneLayers } from "./WorkspacePreview";
 
 interface ProductDetailsContextValue {
@@ -101,11 +102,11 @@ function Gallery({ item }: { item: CatalogItem }) {
         }
       }}
     >
-      <div className="relative w-full overflow-hidden rounded-xl bg-stone-100" style={{ aspectRatio: SCENE_ASPECT_RATIO }}>
+      <div className="relative w-full overflow-hidden rounded-card bg-surface" style={{ aspectRatio: SCENE_ASPECT_RATIO }}>
         <div role="img" aria-label={`${current.label} (${index + 1} of ${slides.length})`} className="absolute inset-0">
           <SlideView slide={current} item={item} selection={selection} />
           {current.kind === "scene" && (
-            <span className="absolute left-2 top-2 rounded-md bg-stone-900/80 px-2 py-0.5 text-xs font-medium text-white">
+            <span className="absolute left-2 top-2 rounded-control bg-ink/80 px-2 py-0.5 text-xs font-medium text-raised">
               In your space
             </span>
           )}
@@ -114,7 +115,7 @@ function Gallery({ item }: { item: CatalogItem }) {
           type="button"
           onClick={() => go(-1)}
           aria-label="Previous image"
-          className="absolute left-2 top-1/2 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full bg-white/90 text-stone-900 shadow-md hover:bg-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-stone-900"
+          className="absolute left-2 top-1/2 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full bg-raised/90 text-ink shadow-card transition hover:bg-raised hover:shadow-float focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent motion-reduce:transition-none"
         >
           <Arrow dir="left" />
         </button>
@@ -122,7 +123,7 @@ function Gallery({ item }: { item: CatalogItem }) {
           type="button"
           onClick={() => go(1)}
           aria-label="Next image"
-          className="absolute right-2 top-1/2 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full bg-white/90 text-stone-900 shadow-md hover:bg-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-stone-900"
+          className="absolute right-2 top-1/2 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full bg-raised/90 text-ink shadow-card transition hover:bg-raised hover:shadow-float focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent motion-reduce:transition-none"
         >
           <Arrow dir="right" />
         </button>
@@ -139,9 +140,9 @@ function Gallery({ item }: { item: CatalogItem }) {
               aria-label={slide.label}
               aria-current={i === index ? "true" : undefined}
               className={[
-                "relative block h-12 w-16 overflow-hidden rounded-lg border bg-stone-100 transition",
-                "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-stone-900",
-                i === index ? "border-stone-900 ring-2 ring-stone-900" : "border-stone-200 hover:border-stone-400",
+                "relative block h-12 w-16 overflow-hidden rounded-control border bg-surface transition motion-reduce:transition-none",
+                "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent",
+                i === index ? "border-accent ring-2 ring-accent" : "border-line hover:border-ink/30",
               ].join(" ")}
             >
               <SlideView slide={slide} item={item} selection={selection} />
@@ -159,25 +160,9 @@ function Gallery({ item }: { item: CatalogItem }) {
  */
 function ProductDetailsSheet({ item, onClose }: { item: CatalogItem; onClose: () => void }) {
   const { selection, dispatch } = useConfigurator();
-  const ref = useRef<HTMLDialogElement>(null);
+  // Focus returns to the card that opened the sheet (or a nearby button if it is now disabled).
+  const { dialogProps, requestClose } = useModalDialog(onClose);
   const details = getDetails(item.id);
-
-  useEffect(() => {
-    const dialog = ref.current;
-    // The dialog is unmounted (not just closed), so return focus to the card that opened it ourselves.
-    const opener = document.activeElement instanceof HTMLElement ? document.activeElement : null;
-    // Fallback if the opener can't take focus back (e.g. the monitor card is disabled at the cap).
-    const scope = opener?.closest("dialog, section") ?? null;
-    if (dialog && !dialog.open) dialog.showModal();
-    return () => {
-      dialog?.close();
-      if (opener?.isConnected && !opener.matches(":disabled")) {
-        opener.focus({ preventScroll: true });
-      } else if (scope?.isConnected) {
-        scope.querySelector<HTMLButtonElement>("button:not(:disabled)")?.focus({ preventScroll: true });
-      }
-    };
-  }, []);
 
   // Remove: accessories toggle off (garage rule applies); monitors drop the last of this model.
   const removeAction = removeProduct(selection, item.id);
@@ -186,38 +171,33 @@ function ProductDetailsSheet({ item, onClose }: { item: CatalogItem; onClose: ()
 
   return (
     <dialog
-      ref={ref}
+      {...dialogProps}
       aria-labelledby="product-details-title"
-      onCancel={(e) => {
-        e.preventDefault();
-        onClose();
-      }}
-      // A click on the dialog element itself (not its content) is a click on the backdrop.
-      onClick={(e) => e.target === e.currentTarget && onClose()}
       className={[
-        "overflow-hidden bg-white p-0 text-stone-900 shadow-2xl backdrop:bg-stone-900/60",
-        // Phones: bottom sheet across the full width.
-        "mx-0 mb-0 mt-auto max-h-[calc(100dvh-2rem)] w-full max-w-none rounded-t-2xl",
+        dialogClass,
+        // Phones: bottom sheet across the full width that slides up.
+        "mx-0 mb-0 mt-auto max-h-[calc(100dvh-2rem)] w-full max-w-none rounded-t-sheet",
+        "max-md:starting:open:translate-y-4 max-md:data-[closing]:translate-y-4",
         // md+: centered card.
-        "md:m-auto md:w-[min(44rem,calc(100vw-2rem))] md:rounded-2xl",
+        "md:m-auto md:w-[min(44rem,calc(100vw-2rem))] md:rounded-sheet",
       ].join(" ")}
     >
       <div className="flex max-h-[calc(100dvh-2rem)] flex-col">
         <header className="flex shrink-0 items-start justify-between gap-2 px-5 pb-2 pt-4">
           <div className="min-w-0">
-            <h2 id="product-details-title" className="text-lg font-semibold leading-snug">
+            <h2 id="product-details-title" className="font-display text-xl font-semibold leading-snug tracking-tight">
               {item.name}
             </h2>
-            <p className="text-sm text-stone-600">
-              {formatPrice(item.weeklyPrice)}/week
-              {monitorCount > 1 && <span className="text-stone-500"> · {monitorCount} added</span>}
+            <p className="text-sm tabular-nums text-muted">
+              <span className="font-semibold text-ink">{formatPrice(item.weeklyPrice)}</span>/week
+              {monitorCount > 1 && <span> · {monitorCount} added</span>}
             </p>
           </div>
           <button
             type="button"
-            onClick={onClose}
+            onClick={() => requestClose()}
             aria-label="Close details"
-            className="shrink-0 rounded-lg px-2 py-1 text-xl leading-none text-stone-500 hover:bg-stone-100 hover:text-stone-900 focus-visible:outline-2 focus-visible:outline-stone-900"
+            className="shrink-0 rounded-control px-2 py-1 text-xl leading-none text-muted transition hover:bg-surface hover:text-ink focus-visible:outline-2 focus-visible:outline-accent motion-reduce:transition-none"
           >
             ×
           </button>
@@ -227,16 +207,16 @@ function ProductDetailsSheet({ item, onClose }: { item: CatalogItem; onClose: ()
           <Gallery item={item} />
           {details && (
             <div className="space-y-4">
-              <p className="text-sm leading-relaxed text-stone-700">{details.description}</p>
+              <p className="text-sm leading-relaxed text-ink/80">{details.description}</p>
               <section aria-labelledby="product-specs-title">
                 <h3 id="product-specs-title" className="text-sm font-semibold">
                   Specifications
                 </h3>
-                <dl className="mt-2 divide-y divide-stone-200 rounded-xl border border-stone-200 text-sm">
+                <dl className="mt-2 divide-y divide-line rounded-card border border-line text-sm">
                   {details.specs.map((spec) => (
                     <div key={spec.label} className="flex flex-wrap justify-between gap-x-4 gap-y-0.5 px-3 py-2">
-                      <dt className="text-stone-500">{spec.label}</dt>
-                      <dd className="min-w-0 text-right font-medium text-stone-900">{spec.value}</dd>
+                      <dt className="text-muted">{spec.label}</dt>
+                      <dd className="min-w-0 text-right font-medium text-ink">{spec.value}</dd>
                     </div>
                   ))}
                 </dl>
@@ -246,25 +226,28 @@ function ProductDetailsSheet({ item, onClose }: { item: CatalogItem; onClose: ()
         </div>
 
         <footer
-          className="flex shrink-0 items-center justify-end gap-2 border-t border-stone-200 px-5 pt-3"
+          className="flex shrink-0 items-center justify-end gap-2 border-t border-line px-5 pt-3"
           style={{ paddingBottom: "calc(0.75rem + env(safe-area-inset-bottom, 0px))" }}
         >
           {remove && (
             <button
               type="button"
               onClick={() => {
-                remove();
-                onClose();
+                // Remove after the exit animation, so the sheet doesn't change under the pointer.
+                requestClose(() => {
+                  remove();
+                  onClose();
+                });
               }}
-              className="rounded-xl px-4 py-2 text-sm font-semibold text-red-700 hover:bg-red-50 focus-visible:outline-2 focus-visible:outline-red-700"
+              className="rounded-control px-4 py-2 text-sm font-semibold text-danger transition hover:bg-danger/10 focus-visible:outline-2 focus-visible:outline-danger motion-reduce:transition-none"
             >
               {item.category === "monitor" && monitorCount > 1 ? "Remove one" : "Remove"}
             </button>
           )}
           <button
             type="button"
-            onClick={onClose}
-            className="rounded-xl bg-stone-900 px-5 py-2 text-sm font-semibold text-white hover:bg-stone-700 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-stone-900"
+            onClick={() => requestClose()}
+            className="rounded-control bg-accent px-5 py-2 text-sm font-semibold text-accent-contrast shadow-card transition hover:bg-accent/90 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent motion-reduce:transition-none"
           >
             Select
           </button>

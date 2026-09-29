@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useState, type FormEvent } from "react";
+import { Brand } from "@/components/Brand";
 import { useConfigurator } from "@/components/ConfiguratorProvider";
 import { SelectionPreviews } from "@/components/WorkspacePreview";
 import { formatPrice } from "@/lib/catalog";
@@ -15,6 +16,27 @@ import {
 } from "@/lib/checkout";
 import { type LineItem, hasDeskAndChair, lineItems, rentalTotal, weeklyTotal } from "@/lib/configurator";
 
+/** Shared card and button styles for the checkout page. */
+const card = "rounded-sheet border border-line bg-raised p-5 shadow-card";
+const primaryButton =
+  "rounded-control bg-accent px-5 py-3 text-sm font-semibold text-accent-contrast shadow-card transition hover:bg-accent/90 hover:shadow-float focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent motion-reduce:transition-none";
+const secondaryButton =
+  "rounded-control border border-line bg-raised px-5 py-3 text-sm font-semibold text-ink transition hover:border-ink/30 hover:bg-surface focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent motion-reduce:transition-none";
+
+/** Brand header linking back to the configurator. */
+function CheckoutHeader() {
+  return (
+    <header className="mx-auto flex w-full max-w-3xl items-center px-4 pt-4 md:pt-6">
+      <Link
+        href="/"
+        className="rounded-control text-lg focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-accent md:text-xl"
+      >
+        <Brand>Design your workspace</Brand>
+      </Link>
+    </header>
+  );
+}
+
 const emptyForm: CheckoutInput = { name: "", email: "", startDate: "", weeks: "1" };
 
 interface Confirmation {
@@ -27,11 +49,11 @@ interface Confirmation {
 
 function ItemList({ items }: { items: LineItem[] }) {
   return (
-    <ul className="divide-y divide-stone-200">
+    <ul className="divide-y divide-line">
       {items.map(({ key, item }) => (
         <li key={key} className="flex items-center justify-between gap-3 py-2 text-sm">
           <span className="min-w-0">{item.name}</span>
-          <span className="shrink-0 tabular-nums text-stone-700">{formatPrice(item.weeklyPrice)}/week</span>
+          <span className="shrink-0 tabular-nums text-muted">{formatPrice(item.weeklyPrice)}/week</span>
         </li>
       ))}
     </ul>
@@ -51,12 +73,12 @@ function Field({
 }) {
   return (
     <div className="space-y-1">
-      <label htmlFor={id} className="block text-sm font-medium text-stone-900">
+      <label htmlFor={id} className="block text-sm font-medium text-ink">
         {label}
       </label>
       {children}
       {error && (
-        <p id={`${id}-error`} className="text-sm text-red-700">
+        <p id={`${id}-error`} className="text-sm text-danger">
           {error}
         </p>
       )}
@@ -65,7 +87,7 @@ function Field({
 }
 
 const inputClass =
-  "block w-full min-w-0 rounded-lg border border-stone-300 bg-white px-3 py-2 text-base text-stone-900 focus:border-stone-900 focus:outline-2 focus:outline-stone-900 aria-[invalid=true]:border-red-600";
+  "block w-full min-w-0 rounded-control border border-line bg-raised px-3 py-2 text-base text-ink shadow-card transition focus:border-accent focus:outline-2 focus:outline-accent aria-[invalid=true]:border-danger motion-reduce:transition-none";
 
 export default function CheckoutPage() {
   const { selection, dispatch, hydrated } = useConfigurator();
@@ -75,10 +97,13 @@ export default function CheckoutPage() {
 
   if (!hydrated) {
     return (
-      <main className="mx-auto w-full max-w-3xl px-4 py-6" aria-busy="true">
-        <div className="h-8 w-40 animate-pulse rounded bg-stone-200" />
-        <div className="mt-6 h-64 animate-pulse rounded-2xl bg-stone-200" />
-      </main>
+      <>
+        <CheckoutHeader />
+        <main className="mx-auto w-full max-w-3xl px-4 py-6" aria-busy="true">
+          <div className="h-8 w-40 rounded-control bg-line motion-safe:animate-pulse" />
+          <div className="mt-6 h-64 rounded-sheet bg-line motion-safe:animate-pulse" />
+        </main>
+      </>
     );
   }
 
@@ -90,19 +115,21 @@ export default function CheckoutPage() {
 
   if (confirmation) {
     return (
+      <>
+      <CheckoutHeader />
       <main className="mx-auto w-full max-w-3xl px-4 py-6">
-        <div className="rounded-2xl border border-emerald-200 bg-emerald-50 p-5" role="status">
-          <h1 className="text-2xl font-bold text-emerald-900">Rental confirmed</h1>
-          <p className="mt-1 text-emerald-900 [overflow-wrap:anywhere]">
+        <div className="rounded-sheet border border-accent/30 bg-accent/10 p-5" role="status">
+          <h1 className="font-display text-2xl font-bold tracking-tight text-accent">Rental confirmed</h1>
+          <p className="mt-1 text-ink [overflow-wrap:anywhere]">
             Thanks, {confirmation.details.name.trim()}. Your rental starting {confirmation.details.startDate} is confirmed
             for {confirmation.details.email.trim()}.
           </p>
-          <p className="mt-1 text-sm text-emerald-800">No payment was taken and nothing was sent — this on-screen confirmation is all there is.</p>
+          <p className="mt-1 text-sm text-ink/80">No payment was taken and nothing was sent — this on-screen confirmation is all there is.</p>
         </div>
-        <section className="mt-6 rounded-2xl border border-stone-200 bg-white p-5">
-          <h2 className="text-lg font-semibold">Your workspace</h2>
+        <section className={`mt-6 ${card}`}>
+          <h2 className="font-display text-lg font-semibold tracking-tight">Your workspace</h2>
           <ItemList items={confirmation.items} />
-          <dl className="mt-3 space-y-1 border-t border-stone-200 pt-3 text-sm">
+          <dl className="mt-3 space-y-1 border-t border-line pt-3 text-sm">
             <div className="flex justify-between">
               <dt>Weekly total</dt>
               <dd className="font-semibold tabular-nums">{formatPrice(confirmation.weekly)}/week</dd>
@@ -119,18 +146,19 @@ export default function CheckoutPage() {
           <Link
             href="/"
             onClick={() => dispatch({ type: "reset" })}
-            className="rounded-xl bg-stone-900 px-5 py-3 text-sm font-semibold text-white hover:bg-stone-700"
+            className={primaryButton}
           >
             Start over
           </Link>
           <Link
             href="/"
-            className="rounded-xl border border-stone-300 bg-white px-5 py-3 text-sm font-semibold text-stone-900 hover:border-stone-500"
+            className={secondaryButton}
           >
             Back to edit
           </Link>
         </div>
       </main>
+      </>
     );
   }
 
@@ -160,29 +188,34 @@ export default function CheckoutPage() {
   });
 
   return (
+    <>
+    <CheckoutHeader />
     <main className="mx-auto w-full max-w-3xl px-4 py-6">
-      <Link href="/" className="text-sm font-medium text-stone-600 hover:text-stone-900">
+      <Link
+        href="/"
+        className="rounded-control text-sm font-medium text-muted transition hover:text-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent motion-reduce:transition-none"
+      >
         ← Back to edit
       </Link>
-      <h1 className="mt-2 text-2xl font-bold tracking-tight text-stone-900">Checkout</h1>
+      <h1 className="mt-2 font-display text-3xl font-bold tracking-tight text-ink">Checkout</h1>
 
       <div className="mt-6 grid grid-cols-1 gap-6 md:grid-cols-2">
-        <section className="min-w-0 space-y-4 rounded-2xl border border-stone-200 bg-white p-5">
-          <h2 className="text-lg font-semibold">Your workspace</h2>
+        <section className={`min-w-0 space-y-4 ${card}`}>
+          <h2 className="font-display text-lg font-semibold tracking-tight">Your workspace</h2>
           <SelectionPreviews />
           {items.length ? (
             <ItemList items={items} />
           ) : (
-            <p className="text-sm text-stone-600">Nothing selected yet.</p>
+            <p className="text-sm text-muted">Nothing selected yet.</p>
           )}
-          <div className="flex justify-between border-t border-stone-200 pt-3 text-sm">
+          <div className="flex justify-between border-t border-line pt-3 text-sm">
             <span>Weekly total</span>
             <span className="font-semibold tabular-nums">{formatPrice(weekly)}/week</span>
           </div>
         </section>
 
-        <form noValidate onSubmit={onSubmit} className="min-w-0 space-y-4 rounded-2xl border border-stone-200 bg-white p-5">
-          <h2 className="text-lg font-semibold">Rental details</h2>
+        <form noValidate onSubmit={onSubmit} className={`min-w-0 space-y-4 ${card}`}>
+          <h2 className="font-display text-lg font-semibold tracking-tight">Rental details</h2>
           <Field id="name" label="Name" error={errors.name}>
             <input type="text" autoComplete="name" {...inputProps("name")} />
           </Field>
@@ -196,21 +229,21 @@ export default function CheckoutPage() {
             <input type="number" min={1} step={1} inputMode="numeric" {...inputProps("weeks")} />
           </Field>
 
-          <dl className="space-y-1 border-t border-stone-200 pt-3 text-sm">
+          <dl className="space-y-1 border-t border-line pt-3 text-sm">
             <div className="flex justify-between">
               <dt>Weekly total</dt>
               <dd className="tabular-nums">{formatPrice(weekly)}/week</dd>
             </div>
             <div className="flex justify-between text-base">
               <dt className="font-semibold">Rental total{weeksValid ? ` (${weeks} week${weeks === 1 ? "" : "s"})` : ""}</dt>
-              <dd className="font-semibold tabular-nums">{weeksValid ? formatPrice(rentalTotal(selection, weeks)) : "—"}</dd>
+              <dd className="font-semibold tabular-nums text-accent">{weeksValid ? formatPrice(rentalTotal(selection, weeks)) : "—"}</dd>
             </div>
           </dl>
 
           {!ready && (
-            <p className="rounded-lg bg-amber-50 px-3 py-2 text-sm text-amber-900" role="status">
+            <p className="rounded-control border border-line bg-surface px-3 py-2 text-sm text-ink" role="status">
               Pick a desk and a chair before confirming.{" "}
-              <Link href="/" className="font-medium underline">
+              <Link href="/" className="font-medium text-accent underline">
                 Choose now
               </Link>
             </p>
@@ -218,13 +251,14 @@ export default function CheckoutPage() {
           <button
             type="submit"
             disabled={!ready}
-            className="w-full rounded-xl bg-stone-900 px-5 py-3 text-sm font-semibold text-white hover:bg-stone-700 disabled:cursor-not-allowed disabled:opacity-40"
+            className={`w-full ${primaryButton} disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:bg-accent disabled:hover:shadow-card`}
           >
             Confirm rental
           </button>
-          <p className="text-center text-xs text-stone-500">No payment is taken.</p>
+          <p className="text-center text-xs text-muted">No payment is taken.</p>
         </form>
       </div>
     </main>
+    </>
   );
 }
