@@ -105,9 +105,9 @@ export const productDetails: Readonly<Record<string, ProductDetails>> = {
 
   // Desk accessories
   plants: {
-    description: "A small set of easy-care desk plants in ceramic pots to bring some green to your workspace.",
+    description: "An easy-care snake plant in a white ceramic pot to bring some green to your workspace.",
     specs: [
-      s("Includes", "2 potted plants"),
+      s("Plant", "Snake plant (Sansevieria)"),
       s("Pot", "Ceramic, 12 cm"),
       s("Care", "Low light, water weekly"),
     ],
@@ -120,16 +120,6 @@ export const productDetails: Readonly<Record<string, ProductDetails>> = {
       s("Colour temperature", "2700–6500 K"),
       s("Dimming", "5 levels, touch control"),
       s("Arm", "Adjustable, aluminium"),
-    ],
-    images: [],
-  },
-  headphones: {
-    description: "Wireless over-ear headphones with active noise cancelling for focused work and calls.",
-    specs: [
-      s("Type", "Over-ear, wireless"),
-      s("Noise cancelling", "Active (ANC)"),
-      s("Battery", "Up to 30 h"),
-      s("Connection", "Bluetooth 5.3, USB-C"),
     ],
     images: [],
   },

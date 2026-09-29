@@ -27,9 +27,8 @@ describe("catalog", () => {
       "Gaming Chair": 30,
       '24" Full HD Monitor': 12,
       '27" 4K Monitor': 20,
-      Plants: 5,
+      "Desk Plant": 5,
       "Desk Lamp": 6,
-      Headphones: 8,
       Sofa: 35,
       "Bean Bag": 12,
       "Floor Plant": 7,
@@ -42,8 +41,8 @@ describe("catalog", () => {
     expect(itemsInCategory("desk")).toHaveLength(2);
     expect(itemsInCategory("chair")).toHaveLength(3);
     expect(itemsInCategory("monitor")).toHaveLength(2);
-    expect(itemsInCategory("accessory")).toHaveLength(11);
-    expect(itemsInGroup("desk-accessory").map((i) => i.id)).toEqual(["plants", "desk-lamp", "headphones"]);
+    expect(itemsInCategory("accessory")).toHaveLength(10);
+    expect(itemsInGroup("desk-accessory").map((i) => i.id)).toEqual(["plants", "desk-lamp"]);
     expect(itemsInGroup("lounge").map((i) => i.id)).toEqual(["sofa", "bean-bag", "floor-plant", "coffee-station"]);
     expect(itemsInGroup("garage").map((i) => i.id)).toEqual(["garage-space", "motorbike", "surfboard", "sport-gear"]);
   });

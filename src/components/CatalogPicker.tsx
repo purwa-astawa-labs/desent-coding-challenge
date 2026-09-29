@@ -74,7 +74,7 @@ export function ItemText({ item }: { item: CatalogItem }) {
 /** Product card button: hover lift, accent ring when selected, dimmed when disabled. */
 export function cardClass(selected: boolean, disabled = false) {
   return [
-    "group flex w-full min-w-0 flex-col rounded-card border bg-raised p-3 text-left shadow-card",
+    "group flex h-full w-full min-w-0 flex-col rounded-card border bg-raised p-3 text-left shadow-card",
     "transition duration-200 ease-out motion-reduce:transition-none",
     "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent",
     selected
@@ -85,8 +85,13 @@ export function cardClass(selected: boolean, disabled = false) {
 }
 
 /** The "+ Add" affordance under an unselected card. */
-function AddHint() {
-  return <span className="mt-2 self-start text-xs font-semibold text-ink">+ Add</span>;
+/** Bottom line of a toggle card: "+ Add", or "Added" once selected, so selected and unselected cards stay the same height. */
+function AddHint({ selected = false }: { selected?: boolean }) {
+  return (
+    <span className={`mt-auto self-start pt-2 text-xs font-semibold ${selected ? "text-muted" : "text-ink"}`}>
+      {selected ? "Added" : "+ Add"}
+    </span>
+  );
 }
 
 function SingleChoice({ category }: { category: "desk" | "chair" }) {
@@ -207,7 +212,7 @@ function ToggleGroup({ group }: { group: Group }) {
               <ItemVisual item={item} selected={selected} />
               <ItemText item={item} />
               {note && <span className="text-xs text-muted">{note}</span>}
-              {!selected && <AddHint />}
+              <AddHint selected={selected} />
             </button>
           </li>
         );

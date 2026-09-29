@@ -87,9 +87,9 @@ export const catalog: readonly CatalogItem[] = [
   { id: "monitor-27-4k", category: "monitor", group: "monitor", name: '27" 4K Monitor', weeklyPrice: 20, image: "/items/monitor-27-4k.webp", layer: { z: 20, left: DESK_CENTER - 10.25, bottom: MONITOR_BASE, width: 20.5 } },
 
   // Desk accessories — shown on the workspace scene
-  { id: "plants", category: "accessory", group: "desk-accessory", name: "Plants", weeklyPrice: 5, image: "/items/plants.svg", layer: { z: 30, left: 76.75, top: 33, width: 5 } },
-  { id: "desk-lamp", category: "accessory", group: "desk-accessory", name: "Desk Lamp", weeklyPrice: 6, image: "/items/desk-lamp.svg", layer: { z: 30, left: 30.3, top: 30.8, width: 6 } },
-  { id: "headphones", category: "accessory", group: "desk-accessory", name: "Headphones", weeklyPrice: 8, image: "/items/headphones.svg", layer: { z: 35, left: 70, top: 41, width: 7 } },
+  { id: "plants", category: "accessory", group: "desk-accessory", name: "Desk Plant", weeklyPrice: 5, image: "/items/plants.webp", layer: { z: 30, left: 75.5, bottom: MONITOR_BASE, width: 6.5 } },
+  // Behind the monitors (z 15): in a 3-monitor bank only its head shows above the left screen.
+  { id: "desk-lamp", category: "accessory", group: "desk-accessory", name: "Desk Lamp", weeklyPrice: 6, image: "/items/desk-lamp.webp", layer: { z: 15, left: 31, bottom: MONITOR_BASE, width: 5.4 } },
 
   // Lounge zone — own scene
   { id: "sofa", category: "accessory", group: "lounge", name: "Sofa", weeklyPrice: 35, image: "/items/sofa.svg", layer: { z: 10, left: 30, top: 44, width: 40 } },
