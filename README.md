@@ -50,7 +50,7 @@ You don't need any environment variables or paid add-ons. Images are served as p
 
 ```
 public/scene/*.webp          zone scenes: room (workspace), lounge, garage (photos, 1600×1200 WebP)
-public/items/*.svg           one image per catalog item
+public/items/*.webp          one image per catalog item (+ *-front.webp chair thumbnails)
 src/lib/catalog.ts           catalog: items, prices, images, preview layer boxes
 src/lib/configurator.ts      selection reducer, totals, storage parsing (pure)
 src/lib/presets.ts           ready-made setups offered when the workspace is empty
@@ -59,31 +59,36 @@ src/lib/checkout.ts          checkout validation (pure)
 src/components/              provider (state + localStorage), full-screen configurator + drawer, preview, presets, picker, product details sheet, summary bar
 src/app/page.tsx             configurator page
 src/app/checkout/page.tsx    checkout page
+scripts/                     image pipeline: cutout.sh (background removal), add_shadow.py (contact shadows)
 ```
 
-## Replacing the images
+## Images: scenes and products
 
-Each item's image path is the `image` field of its entry in `src/lib/catalog.ts`. To use your own artwork, either:
+All images are photos generated with Google Gemini. The prompts are in `_bmad-output/scene-image-prompts.md`; each asks for a straight-on, level camera (70 mm look) and soft daylight so products line up with their scene. Full-size originals are kept locally in `design/scene-originals/` and `design/item-originals/` (git-ignored); only compressed WebP files are served.
 
-- overwrite the file at the same path in `public/items/` (for example `public/items/desk-oak-standing.svg`), or
-- add a new file under `public/` and change that item's `image` to point to it (PNG, JPG, WebP and SVG all work).
+**Scenes** (`public/scene/{room,lounge,garage}.webp`): 1600×1200 (4:3), empty except for fixed decor (the lounge's sofa and plant, the garage's door and shelf). Convert a new one with:
 
-**Keep each image's aspect ratio the same as the placeholder it replaces.** Every item sits in a fixed layer box on the 4:3 scene. The box sets `left`, `top` and `width` as percentages, and the height follows from the image's own proportions. The placeholder SVGs' `viewBox` sizes give the intended ratios, in scene units where the scene is 800×600:
+```bash
+magick original.jpeg -resize 1600x1200^ -gravity center -extent 1600x1200 -strip -quality 80 public/scene/room.webp
+```
 
-| Image | Size (w×h) |
-|---|---|
-| Desks | 416×200 |
-| Chairs | 160×230 |
-| Monitors | 100×92 |
-| Plants | 40×72 |
-| Coffee Station | 36×48 |
-| Sport Gear | 104×90 |
-| Surfboard | 80×300 |
-| Motorbike | 200×130 |
-| Garage Space | 208×260 |
-| Scenes (`public/scene/*.webp`) | 1600×1200 (4:3); originals in `design/scene-originals/` |
+**Products** (`public/items/*.webp`), cut out on a plain contrasting background:
 
-Use transparent backgrounds so the layers show through one another. If an image has a different shape, adjust its `layer` box (`left`, `top` or `bottom`, `width`, `z`) in `catalog.ts`. `z` sets the stacking order, and higher values draw in front. Monitors only use their `width`: `monitorBoxes()` in `src/lib/scene.ts` stands them on the desk by count (one centered, two side by side, three as a bank).
+```bash
+scripts/cutout.sh design/item-originals/desk-oak-standing.jpeg /tmp/desk.png          # remove background, crop tight, clean edges
+python3 scripts/add_shadow.py /tmp/desk.png public/items/desk-oak-standing.webp 1300x 0.012   # floor items: resize + contact shadows
+magick /tmp/monitor.png -resize 700x -quality 85 -define webp:alpha-quality=100 public/items/monitor-24-fhd.webp  # items on the desk: resize only
+```
+
+`cutout.sh` uses [rembg](https://github.com/danielgatis/rembg) through `uv` (the model downloads on first run) and ImageMagick. It works best when the product contrasts with its background; for black-on-black edges (a lamp base on a dark ledge) patch the mask by hand. `add_shadow.py` finds the feet, castors or tyres from the transparency mask and bakes a soft shadow under each; use a tolerance of about `0.012` for desks and `0.06` for chairs.
+
+**Placing a product** is its `layer` box in `src/lib/catalog.ts`, in percent of the scene: `left`, `width`, and either `top` (desks, chairs) or `bottom` (things that stand on a surface: monitors, desk plant and lamp on the desk top at `MONITOR_BASE`, lounge and garage items on the floor). The height follows from the image's proportions, so a new image can keep its box as long as it has a similar shape. `z` sets the stacking order (higher draws in front; the desk lamp sits behind the monitors). Size products from something of known size in the scene (a desk, the sofa, a door) and check with a composite before wiring them in:
+
+```bash
+magick public/scene/garage.webp \( public/items/motorbike.webp -resize 832x \) -geometry +400+580 -composite /tmp/check.png
+```
+
+Monitors only use their `width`: `monitorBoxes()` in `src/lib/scene.ts` stands them on the desk by count (one centered, two side by side, three as a bank that stays on the desk). Chairs show their back in the scene and use `thumbnail` for a front view on cards and in the details gallery.
 
 ## Product details, specs and photos
 
